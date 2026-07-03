@@ -983,7 +983,6 @@
     });
   }
 
-  // --- Utilities & Table Features ---
   function updateStat(id, val, suffix) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + suffix; el.className = val >= 0 ? "fw-bold mb-0 text-success" : "fw-bold mb-0 text-danger"; } }
   function updatePopStat(id, val) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); } }
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
