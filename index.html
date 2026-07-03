@@ -14,14 +14,12 @@
     .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
     .container-custom { width: 95%; max-width: 1800px; margin: 0 auto; }
     
-    /* ปรับขนาดส่วนการ์ดสรุปผลให้เล็กลง */
     .card-stat { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .card-stat h4 { font-size: 1.25rem; }
     .card-stat small { font-size: 0.8rem; }
     
     .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     
-    /* ตรึงหัวตาราง (Sticky Header) */
     .table-responsive { max-height: 65vh; overflow-y: auto; }
     .table-responsive thead th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; border-bottom: 2px solid #dee2e6; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
     
@@ -91,16 +89,21 @@
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="tab-summary">
-        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1 flex-wrap gap-2">
           <h6 class="fw-bold m-0 text-secondary">สถานะปัจจุบัน</h6>
-          <div class="d-flex gap-2">
-            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="🔍 ค้นหาทะเบียน..." onkeyup="filterTable('fleetTable', this.value)">
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <select id="limit-fleetTable" class="form-select form-select-sm w-auto" onchange="changePage('fleetTable', 1)">
+              <option value="50">50 แถว</option>
+              <option value="100">100 แถว</option>
+              <option value="-1">ทั้งหมด</option>
+            </select>
+            <input type="text" id="search-fleetTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหาทะเบียน..." onkeyup="changePage('fleetTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="fleetTable">
+            <table class="table table-hover align-middle mb-0 text-nowrap" id="fleetTable">
               <thead class="table-light">
                 <tr>
                   <th class="sortable" onclick="sortTable('fleetTable', 0, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
@@ -110,27 +113,34 @@
                   <th class="sortable text-center" onclick="sortTable('fleetTable', 4, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end" onclick="sortTable('fleetTable', 5, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end" onclick="sortTable('fleetTable', 6, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fleetTable', 7, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="text-center">เช็คระยะ</th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 7, true)">รวมเงิน (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 8, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="text-center no-export">เช็คระยะ</th>
                 </tr>
               </thead>
-              <tbody id="tableBody"><tr><td colspan="9" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
+              <tbody id="tableBody"><tr class="no-data-row"><td colspan="10" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
+          <div id="pg-fleetTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
 
       <div class="tab-pane fade" id="tab-fuel-logs">
-        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1 flex-wrap gap-2">
           <h6 class="fw-bold m-0 text-success">⛽ ประวัติเติมน้ำมัน และล้างรถ</h6>
-          <div class="d-flex gap-2">
-            <input type="text" class="form-control form-control-sm" placeholder="🔍 ค้นหา..." onkeyup="filterTable('fuelLogTable', this.value)">
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <select id="limit-fuelLogTable" class="form-select form-select-sm w-auto" onchange="changePage('fuelLogTable', 1)">
+              <option value="50">50 แถว</option>
+              <option value="100">100 แถว</option>
+              <option value="-1">ทั้งหมด</option>
+            </select>
+            <input type="text" id="search-fuelLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา..." onkeyup="changePage('fuelLogTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="fuelLogTable">
+            <table class="table table-hover align-middle mb-0 text-nowrap" id="fuelLogTable">
               <thead class="table-light">
                 <tr>
                   <th class="sortable" onclick="sortTable('fuelLogTable', 0, false)">วันที่ <i class="fas fa-sort ms-1 text-muted"></i></th>
@@ -141,23 +151,29 @@
                   <th class="text-center no-export">จัดการ</th>
                 </tr>
               </thead>
-              <tbody id="fuelLogTableBody"><tr><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+              <tbody id="fuelLogTableBody"><tr class="no-data-row"><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
+          <div id="pg-fuelLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
 
       <div class="tab-pane fade" id="tab-repair-logs">
-        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1 flex-wrap gap-2">
           <h6 class="fw-bold m-0 text-warning text-dark">🔧 ประวัติซ่อมบำรุง</h6>
-          <div class="d-flex gap-2">
-            <input type="text" class="form-control form-control-sm" placeholder="🔍 ค้นหา..." onkeyup="filterTable('repairLogTable', this.value)">
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <select id="limit-repairLogTable" class="form-select form-select-sm w-auto" onchange="changePage('repairLogTable', 1)">
+              <option value="50">50 แถว</option>
+              <option value="100">100 แถว</option>
+              <option value="-1">ทั้งหมด</option>
+            </select>
+            <input type="text" id="search-repairLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา..." onkeyup="changePage('repairLogTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="repairLogTable">
+            <table class="table table-hover align-middle mb-0 text-nowrap" id="repairLogTable">
               <thead class="table-light">
                 <tr>
                   <th class="sortable" onclick="sortTable('repairLogTable', 0, false)">วันที่ <i class="fas fa-sort ms-1 text-muted"></i></th>
@@ -169,9 +185,10 @@
                   <th class="text-center no-export">จัดการ</th>
                 </tr>
               </thead>
-              <tbody id="repairLogTableBody"><tr><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+              <tbody id="repairLogTableBody"><tr class="no-data-row"><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
+          <div id="pg-repairLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
 
@@ -213,7 +230,7 @@
             </div>
             <div class="bg-white rounded shadow-sm overflow-hidden">
               <div class="table-responsive">
-                <table class="table table-striped mb-0">
+                <table class="table table-striped mb-0 text-nowrap">
                   <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่</th><th style="position: sticky; top:0; background: #f8f9fa;">รายการ</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">Trip A</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ลิตร</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-center">เรท</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(L)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(฿)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">รวมเงิน</th></tr></thead>
                   <tbody id="detailFuelBody"></tbody>
                 </table>
@@ -314,6 +331,9 @@
   let RawLogs = []; 
   let FilteredLogs = []; 
   let sortDirection = {}; 
+  
+  // เก็บหน้าปัจจุบันของแต่ละตาราง
+  let currentPages = { 'fleetTable': 1, 'fuelLogTable': 1, 'repairLogTable': 1 };
 
   // --- ระบบ Login & Enter Key ---
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
@@ -421,7 +441,7 @@
     FilteredLogs.forEach(log => {
         let v = vehicleMap[log.plate];
         if (v) {
-            v.totalCost += (log.cost || 0);
+            v.totalCost += (log.cost || 0); // รวมค่าใช้จ่ายทั้งหมดของเดือน
             if (log.type === 'fuel') {
                 v.totalDist += (log.tripA || 0);
                 v.totalLiters += (log.liters || 0);
@@ -449,7 +469,7 @@
     renderAllLogsTable(FilteredLogs);
   }
 
-  // --- Rendering UI ---
+  // --- Rendering UI & Pagination ---
   function renderSummaryTable(vehicleMap) {
     let html = "";
     Object.values(vehicleMap).forEach(v => {
@@ -457,7 +477,7 @@
         let maintStatus = v.remainDist < 0 ? `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>` : 
                           v.remainDist <= 1000 ? `<span class="badge bg-warning text-dark">เหลือ ${v.remainDist.toLocaleString()}</span>` : 
                           `<span class="badge bg-light text-secondary">ปกติ</span>`;
-        // เพิ่ม v.type ตรงช่องประเภทรถ
+                          
         html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer">
                     <td class="fw-bold">${v.plate}</td>
                     <td class="text-center">${v.type || '-'}</td>
@@ -466,11 +486,15 @@
                     <td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td>
                     <td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td>
                     <td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td>
+                    <td class="text-end fw-bold text-dark">${v.totalCost.toLocaleString()}</td>
                     <td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td>
                     <td class="text-center no-export">${maintStatus}</td>
                  </tr>`;
     });
-    document.getElementById('tableBody').innerHTML = html;
+    document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="10" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    
+    // อัปเดตการแสดงผลหน้าเพจ
+    changePage('fleetTable', 1);
   }
 
   function renderAllLogsTable(logs) {
@@ -493,10 +517,73 @@
        }
     });
 
-    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || '<tr><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr>';
-    document.getElementById('repairLogTableBody').innerHTML = repairHtml || '<tr><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr>';
+    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || `<tr class="no-data-row"><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    document.getElementById('repairLogTableBody').innerHTML = repairHtml || `<tr class="no-data-row"><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    
+    changePage('fuelLogTable', 1);
+    changePage('repairLogTable', 1);
   }
   
+  // --- Pagination Logic ---
+  function changePage(tableId, page) {
+      currentPages[tableId] = page;
+      updateTableView(tableId);
+  }
+
+  function updateTableView(tableId) {
+      let limit = parseInt(document.getElementById('limit-' + tableId).value);
+      let page = currentPages[tableId];
+      let tbody = document.getElementById(tableId).querySelector('tbody');
+      let rows = Array.from(tbody.querySelectorAll('tr:not(.no-data-row)'));
+      let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
+
+      // กรองแถวตาม Search
+      let filteredRows = rows.filter(row => row.innerText.toLowerCase().includes(searchInput));
+      let totalItems = filteredRows.length;
+      let totalPages = limit === -1 ? 1 : Math.ceil(totalItems / limit);
+
+      if (page > totalPages && totalPages > 0) { 
+          page = totalPages; 
+          currentPages[tableId] = page; 
+      }
+
+      let start = (page - 1) * limit;
+      let end = limit === -1 ? totalItems : start + limit;
+
+      // ซ่อนทั้งหมดก่อน
+      rows.forEach(r => r.style.display = 'none');
+      
+      // แสดงเฉพาะหน้าปัจจุบัน
+      for(let i = start; i < end && i < totalItems; i++) {
+          filteredRows[i].style.display = '';
+      }
+
+      renderPaginationControls(tableId, totalItems, page, totalPages, start, end);
+  }
+
+  function renderPaginationControls(tableId, totalItems, page, totalPages, start, end) {
+      let pgDiv = document.getElementById('pg-' + tableId);
+      if(!pgDiv) return;
+      
+      if(totalItems === 0) {
+          pgDiv.innerHTML = `<span class="text-muted">ไม่พบข้อมูลตามการค้นหา</span>`;
+          return;
+      }
+
+      let actualEnd = end > totalItems ? totalItems : end;
+      let html = `<span class="text-muted">แสดง ${start + 1} - ${actualEnd} จาก ${totalItems} รายการ</span>`;
+      
+      if (totalPages > 1) {
+          html += `<div class="btn-group">
+                      <button class="btn btn-sm btn-outline-secondary" onclick="changePage('${tableId}', ${page - 1})" ${page === 1 ? 'disabled' : ''}>ก่อนหน้า</button>
+                      <button class="btn btn-sm btn-outline-secondary" disabled>หน้า ${page} / ${totalPages}</button>
+                      <button class="btn btn-sm btn-outline-secondary" onclick="changePage('${tableId}', ${page + 1})" ${page === totalPages ? 'disabled' : ''}>ถัดไป</button>
+                   </div>`;
+      }
+      pgDiv.innerHTML = html;
+  }
+  
+  // --- Popup Show Detail ---
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
     let currentCar = MasterVehicles.find(v => v.plate === plate);
@@ -777,7 +864,6 @@
   function updatePopStat(id, val) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); } }
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
   function formatDate(d) { return d ? d.split('-').reverse().join('/') : ''; }
-  function filterTable(tableId, val) { val = val.toLowerCase(); document.querySelectorAll(`#${tableId} tbody tr`).forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none'); }
   
   // Sort Table Function
   function sortTable(tableId, colIndex, isNumeric) {
@@ -786,9 +872,9 @@
 
       let table = document.getElementById(tableId);
       let tbody = table.tBodies[0];
-      let rows = Array.from(tbody.querySelectorAll("tr"));
+      let rows = Array.from(tbody.querySelectorAll("tr:not(.no-data-row)"));
 
-      if(rows.length === 1 && rows[0].cells.length === 1) return;
+      if(rows.length === 0) return;
 
       rows.sort((a, b) => {
           let valA = a.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0]; 
@@ -803,7 +889,8 @@
           }
       });
       
-      tbody.append(...rows);
+      tbody.append(...rows); // อัปเดต DOM
+      updateTableView(tableId); // เรียกอัปเดต Pagination ใหม่ให้แสดงหน้าเดิม
   }
 
   // Export to Excel (XLS)
@@ -811,10 +898,23 @@
       let table = document.getElementById(tableId);
       let cloneTable = table.cloneNode(true);
       
-      let ths = cloneTable.querySelectorAll('th.no-export');
-      let tds = cloneTable.querySelectorAll('td.no-export');
-      ths.forEach(el => el.remove());
-      tds.forEach(el => el.remove());
+      // ลบคอลัมน์ที่ไม่ต้องการ (ปุ่มจัดการ/เช็คระยะ)
+      cloneTable.querySelectorAll('.no-export').forEach(el => el.remove());
+
+      // จัดการกับข้อมูลที่ถูกซ่อนเพราะ Pagination: ลบเฉพาะแถวที่ไม่ตรงกับ Search
+      let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
+      let tbody = cloneTable.querySelector('tbody');
+      if (tbody) {
+          Array.from(tbody.rows).forEach(row => {
+              if (row.classList.contains('no-data-row')) {
+                  row.remove();
+              } else if (searchInput && !row.innerText.toLowerCase().includes(searchInput)) {
+                  row.remove(); // ลบทิ้งถ้าไม่ตรงกับที่ค้นหา
+              } else {
+                  row.style.display = ''; // บังคับให้แถวที่ตรงกับค้นหา "แสดงผล" ใน Excel
+              }
+          });
+      }
 
       let html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
