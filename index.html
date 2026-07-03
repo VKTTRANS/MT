@@ -240,6 +240,7 @@
                   <tbody id="detailFuelBody"></tbody>
                 </table>
               </div>
+              <div id="modalFuelPagination" class="d-flex justify-content-between align-items-center p-2 bg-white border-top small"></div>
             </div>
           </div>
           <div class="tab-pane fade" id="detail-repair">
@@ -259,6 +260,7 @@
                   <tbody id="detailRepairBody"></tbody>
                 </table>
               </div>
+              <div id="modalRepairPagination" class="d-flex justify-content-between align-items-center p-2 bg-white border-top small"></div>
             </div>
           </div>
         </div>
@@ -337,8 +339,14 @@
   let FilteredLogs = []; 
   let sortDirection = {}; 
   
-  // เก็บหน้าปัจจุบันของแต่ละตาราง
   let currentPages = { 'fleetTable': 1, 'fuelLogTable': 1, 'repairLogTable': 1 };
+  
+  // ตัวแปรสำหรับ Pagination ใน Modal
+  let modalFuelData = [];
+  let modalRepairData = [];
+  let modalFuelPage = 1;
+  let modalRepairPage = 1;
+  const MODAL_PAGE_SIZE = 15;
 
   // --- ระบบ Login & Enter Key ---
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
@@ -349,7 +357,7 @@
     const btn = document.getElementById('btnLogin');
     const pin = document.getElementById('pinInput').value;
     btn.innerText = 'กำลังตรวจสอบ...';
-    if (pin === "1234") { // รหัส PIN 
+    if (pin === "1234") { 
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('appScreen').style.display = 'block';
       document.getElementById('fabControls').style.display = 'flex';
@@ -446,7 +454,7 @@
     FilteredLogs.forEach(log => {
         let v = vehicleMap[log.plate];
         if (v) {
-            v.totalCost += (log.cost || 0); // รวมค่าใช้จ่ายทั้งหมดของเดือน
+            v.totalCost += (log.cost || 0);
             if (log.type === 'fuel') {
                 v.totalDist += (log.tripA || 0);
                 v.totalLiters += (log.liters || 0);
@@ -497,7 +505,6 @@
                  </tr>`;
     });
     document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="10" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
-    
     changePage('fleetTable', 1);
   }
 
@@ -514,7 +521,7 @@
            let badge = log.type === 'fuel' ? '<i class="fas fa-gas-pump text-success"></i>' : '<i class="fas fa-shower text-info"></i>';
            
            if (log.type === 'fuel') {
-               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark'; // ตกแต่งสีให้เรท
+               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
                fuelHtml += `<tr>
                  <td>${formatDate(log.date)}</td>
                  <td class="fw-bold">${log.plate}</td>
@@ -529,7 +536,6 @@
                  <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
                </tr>`;
            } else {
-               // กรณีล้างรถ ขีดแดช (-) ไว้เพื่อไม่ให้รก
                fuelHtml += `<tr>
                  <td>${formatDate(log.date)}</td>
                  <td class="fw-bold">${log.plate}</td>
@@ -544,7 +550,6 @@
                  <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
                </tr>`;
            }
-
        } else if (log.source === 'repair') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
@@ -559,7 +564,6 @@
     changePage('repairLogTable', 1);
   }
   
-  // --- Pagination Logic ---
   function changePage(tableId, page) {
       currentPages[tableId] = page;
       updateTableView(tableId);
@@ -576,19 +580,13 @@
       let totalItems = filteredRows.length;
       let totalPages = limit === -1 ? 1 : Math.ceil(totalItems / limit);
 
-      if (page > totalPages && totalPages > 0) { 
-          page = totalPages; 
-          currentPages[tableId] = page; 
-      }
+      if (page > totalPages && totalPages > 0) { page = totalPages; currentPages[tableId] = page; }
 
       let start = (page - 1) * limit;
       let end = limit === -1 ? totalItems : start + limit;
 
       rows.forEach(r => r.style.display = 'none');
-      
-      for(let i = start; i < end && i < totalItems; i++) {
-          filteredRows[i].style.display = '';
-      }
+      for(let i = start; i < end && i < totalItems; i++) { filteredRows[i].style.display = ''; }
 
       renderPaginationControls(tableId, totalItems, page, totalPages, start, end);
   }
@@ -601,7 +599,6 @@
           pgDiv.innerHTML = `<span class="text-muted">ไม่พบข้อมูลตามการค้นหา</span>`;
           return;
       }
-
       let actualEnd = end > totalItems ? totalItems : end;
       let html = `<span class="text-muted">แสดง ${start + 1} - ${actualEnd} จาก ${totalItems} รายการ</span>`;
       
@@ -615,7 +612,7 @@
       pgDiv.innerHTML = html;
   }
   
-  // --- Popup Show Detail ---
+  // --- Popup Show Detail (พร้อมระบบแบ่งหน้าใน Modal) ---
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
     let currentCar = MasterVehicles.find(v => v.plate === plate);
@@ -657,11 +654,14 @@
     }
 
     let logs = FilteredLogs.filter(x => x.plate === plate);
-    let sumCount = 0, sumWash = 0, sumLiters = 0, sumCost = 0, sumDiffL = 0, sumDiffB = 0, sumDist = 0;
-    let fuelHtml = "", repairHtml = "", repairTotal = 0;
+    let sumCount = 0, sumWash = 0, sumLiters = 0, sumCost = 0, sumDiffL = 0, sumDiffB = 0, sumDist = 0, repairTotal = 0;
+    
+    modalFuelData = [];
+    modalRepairData = [];
 
     logs.sort((a,b) => b.date.localeCompare(a.date));
 
+    // รวบรวมข้อมูลสำหรับใส่ Modal
     logs.forEach(log => {
        let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
        if (wHead > 0 || wTail > 0) sumWash += (wHead + wTail);
@@ -670,21 +670,17 @@
            if (log.type === 'fuel') {
                sumCount++; sumLiters += log.liters; sumCost += log.cost;
                sumDiffL += (log.diffLiters || 0); sumDiffB += (log.diffBaht || 0); sumDist += (log.tripA || 0);
-               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
-               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>⛽ ${log.detail}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${log.diffLiters>=0?'val-pos':'val-neg'}">${formatNum(log.diffLiters)}</td><td class="text-end ${log.diffBaht>=0?'val-pos':'val-neg'}">${formatNum(log.diffBaht)}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td></tr>`;
            } else {
                sumCost += log.cost;
-               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td colspan="6">🚿 ${log.detail}</td><td class="text-end text-muted">${log.cost}</td></tr>`;
            }
+           modalFuelData.push(log);
        } else if (log.type === 'repair') {
            repairTotal += log.cost;
-           let mechanic = log.mechanic || "-";
-           repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+           modalRepairData.push(log);
        }
     });
     
     let avgRate = sumLiters > 0 ? (sumDist / sumLiters) : 0;
-    
     document.getElementById('popCount').innerText = sumCount;
     document.getElementById('popWashCount').innerText = parseFloat(sumWash.toFixed(1));
     document.getElementById('popLiters').innerText = sumLiters.toLocaleString();
@@ -694,10 +690,76 @@
     updatePopStat('popDiffB', sumDiffB);
     document.getElementById('popRepairCost').innerText = repairTotal.toLocaleString() + " บาท";
 
-    document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="8" class="text-center text-muted">ไม่มีข้อมูล</td></tr>';
-    document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="5" class="text-center text-muted">ไม่มีข้อมูล</td></tr>';
+    // สั่ง Render หน้าแรกของ Modal เสมอเมื่อเปิด
+    modalFuelPage = 1;
+    modalRepairPage = 1;
+    renderModalFuelTable();
+    renderModalRepairTable();
 
     new bootstrap.Modal(document.getElementById('detailModal')).show();
+  }
+
+  // ฟังก์ชันจัดหน้าสำหรับ Modal Fuel
+  function renderModalFuelTable() {
+      let start = (modalFuelPage - 1) * MODAL_PAGE_SIZE;
+      let end = start + MODAL_PAGE_SIZE;
+      let pagedData = modalFuelData.slice(start, end);
+      let fuelHtml = "";
+
+      pagedData.forEach(log => {
+          let badge = log.type === 'fuel' ? '⛽' : '🚿';
+          if (log.type === 'fuel') {
+               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${badge} ${log.detail}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters.toFixed(1)}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${log.diffLiters>=0?'val-pos':'val-neg'}">${formatNum(log.diffLiters)}</td><td class="text-end ${log.diffBaht>=0?'val-pos':'val-neg'}">${formatNum(log.diffBaht)}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+          } else {
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${badge} ${log.detail}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-center">-</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end fw-bold text-muted">${log.cost.toLocaleString()}</td></tr>`;
+          }
+      });
+      document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="8" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
+
+      // สร้างปุ่มเปลี่ยนหน้า
+      let totalPages = Math.ceil(modalFuelData.length / MODAL_PAGE_SIZE);
+      let pgHtml = "";
+      if (totalPages > 1) {
+          pgHtml = `<span class="text-muted">แสดง ${start + 1} - ${Math.min(end, modalFuelData.length)} จาก ${modalFuelData.length} รายการ</span>
+                    <div class="btn-group">
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalFuelPage--; renderModalFuelTable()" ${modalFuelPage === 1 ? 'disabled' : ''}>ก่อนหน้า</button>
+                       <button class="btn btn-sm btn-outline-secondary" disabled>หน้า ${modalFuelPage} / ${totalPages}</button>
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalFuelPage++; renderModalFuelTable()" ${modalFuelPage === totalPages ? 'disabled' : ''}>ถัดไป</button>
+                    </div>`;
+      } else if (modalFuelData.length > 0) {
+          pgHtml = `<span class="text-muted">รายการทั้งหมด (${modalFuelData.length})</span>`;
+      }
+      document.getElementById('modalFuelPagination').innerHTML = pgHtml;
+  }
+
+  // ฟังก์ชันจัดหน้าสำหรับ Modal Repair
+  function renderModalRepairTable() {
+      let start = (modalRepairPage - 1) * MODAL_PAGE_SIZE;
+      let end = start + MODAL_PAGE_SIZE;
+      let pagedData = modalRepairData.slice(start, end);
+      let repairHtml = "";
+
+      pagedData.forEach(log => {
+          let mechanic = log.mechanic || "-";
+          repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+      });
+      document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="5" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
+
+      // สร้างปุ่มเปลี่ยนหน้า
+      let totalPages = Math.ceil(modalRepairData.length / MODAL_PAGE_SIZE);
+      let pgHtml = "";
+      if (totalPages > 1) {
+          pgHtml = `<span class="text-muted">แสดง ${start + 1} - ${Math.min(end, modalRepairData.length)} จาก ${modalRepairData.length} รายการ</span>
+                    <div class="btn-group">
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalRepairPage--; renderModalRepairTable()" ${modalRepairPage === 1 ? 'disabled' : ''}>ก่อนหน้า</button>
+                       <button class="btn btn-sm btn-outline-secondary" disabled>หน้า ${modalRepairPage} / ${totalPages}</button>
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalRepairPage++; renderModalRepairTable()" ${modalRepairPage === totalPages ? 'disabled' : ''}>ถัดไป</button>
+                    </div>`;
+      } else if (modalRepairData.length > 0) {
+          pgHtml = `<span class="text-muted">รายการทั้งหมด (${modalRepairData.length})</span>`;
+      }
+      document.getElementById('modalRepairPagination').innerHTML = pgHtml;
   }
   
   // --- Form Logic & API Calls ---
@@ -897,7 +959,6 @@
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
   function formatDate(d) { return d ? d.split('-').reverse().join('/') : ''; }
   
-  // Sort Table Function
   function sortTable(tableId, colIndex, isNumeric) {
       if (sortDirection[tableId] === undefined) sortDirection[tableId] = true;
       else sortDirection[tableId] = !sortDirection[tableId];
@@ -921,19 +982,16 @@
           }
       });
       
-      tbody.append(...rows); // อัปเดต DOM
-      updateTableView(tableId); // เรียกอัปเดต Pagination ใหม่ให้แสดงหน้าเดิม
+      tbody.append(...rows);
+      updateTableView(tableId); 
   }
 
-  // Export to Excel (XLS)
   function exportExcel(tableId, filename) {
       let table = document.getElementById(tableId);
       let cloneTable = table.cloneNode(true);
       
-      // ลบคอลัมน์ที่ไม่ต้องการ (ปุ่มจัดการ/เช็คระยะ)
       cloneTable.querySelectorAll('.no-export').forEach(el => el.remove());
 
-      // จัดการกับข้อมูลที่ถูกซ่อนเพราะ Pagination: ลบเฉพาะแถวที่ไม่ตรงกับ Search
       let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
       let tbody = cloneTable.querySelector('tbody');
       if (tbody) {
@@ -941,9 +999,9 @@
               if (row.classList.contains('no-data-row')) {
                   row.remove();
               } else if (searchInput && !row.innerText.toLowerCase().includes(searchInput)) {
-                  row.remove(); // ลบทิ้งถ้าไม่ตรงกับที่ค้นหา
+                  row.remove();
               } else {
-                  row.style.display = ''; // บังคับให้แถวที่ตรงกับค้นหา "แสดงผล" ใน Excel
+                  row.style.display = ''; 
               }
           });
       }
