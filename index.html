@@ -385,6 +385,7 @@
     });
   }
 
+  // --- API Wrapper ---
   async function callAPI(payload) {
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -513,7 +514,8 @@
     let html = "";
     Object.values(vehicleMap).forEach(v => {
         let avgRate = v.totalLiters > 0 ? (v.totalDist / v.totalLiters) : 0;
-      
+        
+        // 🟡 ปรับเงื่อนไขให้แจ้งเตือนเริ่มที่ 2000 กม. 🟡
         let maintStatus = "";
         if (v.remainDist < 0) {
             maintStatus = `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>`;
