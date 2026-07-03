@@ -25,8 +25,9 @@
     .modal-stat-box { background: #fff; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; text-align: center; height: 100%; }
     .modal-stat-title { font-size: 0.8rem; color: #6c757d; }
     .modal-stat-value { font-size: 1.1rem; font-weight: bold; color: #212529; }
-    .nav-tabs .nav-link { color: #495057; font-weight: 600; }
+    .nav-tabs .nav-link { color: #495057; font-weight: 600; cursor: pointer; }
     .nav-tabs .nav-link.active { color: #0d6efd; border-bottom: 3px solid #0d6efd; }
+    .sortable:hover { background-color: #e9ecef; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -74,39 +75,95 @@
 
     <ul class="nav nav-tabs mb-3" id="mainTab" role="tablist">
       <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-summary">📊 สรุปรายคัน</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-all-logs">📝 ประวัติทั้งหมด</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fuel-logs">⛽ ประวัติน้ำมัน/ล้างรถ</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-repair-logs">🔧 ประวัติซ่อมบำรุง</button></li>
     </ul>
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="tab-summary">
         <div class="d-flex justify-content-between align-items-center mb-2 px-1">
           <h5 class="fw-bold m-0 text-secondary">สถานะปัจจุบัน</h5>
-          <input type="text" id="searchInput" class="form-control form-control-sm w-auto" placeholder="🔍 ทะเบียน..." onkeyup="filterTable('fleetTable', this.value)">
+          <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="🔍 ค้นหาทะเบียน..." onkeyup="filterTable('fleetTable', this.value)">
+            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export Excel</button>
+          </div>
         </div>
         <div class="table-card">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="fleetTable">
-              <thead class="table-light"><tr><th>ทะเบียน</th><th class="text-end">ระยะทาง</th><th class="text-end">เติมจริง</th><th class="text-center">เรท/STD</th><th class="text-end">ต่าง (ลิตร)</th><th class="text-end">ต่าง (บาท)</th><th class="text-center">ล้าง</th><th class="text-center">เช็คระยะ</th></tr></thead>
+              <thead class="table-light">
+                <tr>
+                  <th class="sortable" onclick="sortTable('fleetTable', 0, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 1, true)">ระยะทาง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 2, true)">เติมจริง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 3, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 4, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 5, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 6, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="text-center">เช็คระยะ</th>
+                </tr>
+              </thead>
               <tbody id="tableBody"><tr><td colspan="8" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <div class="tab-pane fade" id="tab-all-logs">
-        <div class="row g-2 mb-2 align-items-center">
-          <div class="col-md-4"><input type="text" class="form-control" placeholder="🔍 ค้นหาในประวัติ..." onkeyup="filterTable('logTable', this.value)"></div>
-          <div class="col-md-8 text-end"><span class="text-muted small me-2" id="logCountText">แสดงรายการตามตัวกรอง</span></div>
+      <div class="tab-pane fade" id="tab-fuel-logs">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+          <h5 class="fw-bold m-0 text-success">⛽ ประวัติเติมน้ำมัน และล้างรถ</h5>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" placeholder="🔍 ค้นหา..." onkeyup="filterTable('fuelLogTable', this.value)">
+            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export Excel</button>
+          </div>
         </div>
         <div class="table-card">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="logTable">
-              <thead class="table-light"><tr><th>วันที่</th><th>ทะเบียน</th><th>รายการ</th><th class="text-end">บาท</th><th class="text-center">จัดการ</th></tr></thead>
-              <tbody id="logTableBody"><tr><td colspan="5" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+            <table class="table table-hover align-middle mb-0" id="fuelLogTable">
+              <thead class="table-light">
+                <tr>
+                  <th class="sortable" onclick="sortTable('fuelLogTable', 0, false)">วันที่ <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable" onclick="sortTable('fuelLogTable', 1, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th>รายการ</th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 3, true)">ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 4, true)">บาท <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="text-center no-export">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="fuelLogTableBody"><tr><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
+
+      <div class="tab-pane fade" id="tab-repair-logs">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+          <h5 class="fw-bold m-0 text-warning text-dark">🔧 ประวัติซ่อมบำรุง</h5>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" placeholder="🔍 ค้นหา..." onkeyup="filterTable('repairLogTable', this.value)">
+            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export Excel</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="repairLogTable">
+              <thead class="table-light">
+                <tr>
+                  <th class="sortable" onclick="sortTable('repairLogTable', 0, false)">วันที่ <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable" onclick="sortTable('repairLogTable', 1, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('repairLogTable', 2, true)">เลขไมล์ <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th>รายการซ่อม</th>
+                  <th>ช่าง/อู่</th>
+                  <th class="sortable text-end" onclick="sortTable('repairLogTable', 5, true)">ค่าใช้จ่าย <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="text-center no-export">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="repairLogTableBody"><tr><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -142,7 +199,6 @@
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมเงิน</div><div class="modal-stat-value text-dark" id="popCost">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">เรทเฉลี่ย</div><div class="modal-stat-value text-info" id="popRate">0.00</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมต่าง (บาท)</div><div class="modal-stat-value" id="popDiffB">0</div></div></div>
-              <div style="display:none" id="popDiffL"></div>
             </div>
             <div class="bg-white rounded shadow-sm overflow-hidden">
               <div class="table-responsive">
@@ -240,12 +296,40 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // 🔴🔴🔴 สำคัญ: เปลี่ยน URL ด้านล่างเป็นของคุณจาก Apps Script 🔴🔴🔴
+  // 🔴🔴🔴 URL GAS ของคุณ 🔴🔴🔴
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw0mIjSyoLO_E1RJmsGpBiPNiNVQiotHNcrkgCBg849wjA83Fel4l6VHYSTe0PrIC-/exec';
   
   let MasterVehicles = [];
   let RawLogs = []; 
   let FilteredLogs = []; 
+  let sortDirection = {}; // เก็บสถานะการเรียงลำดับของแต่ละตาราง
+
+  // --- ระบบ Login & Enter Key ---
+  document.getElementById('pinInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') checkLogin();
+  });
+
+  function checkLogin() {
+    const btn = document.getElementById('btnLogin');
+    const pin = document.getElementById('pinInput').value;
+    btn.innerText = 'กำลังตรวจสอบ...';
+    if (pin === "1234") { // รหัส PIN 
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+      document.getElementById('fabControls').style.display = 'flex';
+      initApp();
+    } else {
+      btn.innerText = 'เข้าสู่ระบบ';
+      Swal.fire('รหัสผิด!', 'กรุณาลองใหม่อีกครั้ง', 'error');
+      document.getElementById('pinInput').value = '';
+    }
+  }
+
+  function logout() {
+    Swal.fire({ title: 'ออกจากระบบ?', icon: 'warning', showCancelButton: true }).then((result) => {
+      if (result.isConfirmed) location.reload();
+    });
+  }
 
   // --- API Wrapper ---
   async function callAPI(payload) {
@@ -264,28 +348,6 @@
       document.getElementById('loadingOverlay').style.display = 'none';
       throw error;
     }
-  }
-
-  // --- ระบบ Login ---
-  function checkLogin() {
-    const btn = document.getElementById('btnLogin');
-    const pin = document.getElementById('pinInput').value;
-    btn.innerText = 'กำลังตรวจสอบ...';
-    if (pin === "1234") { // รหัส PIN (ควรเปลี่ยนตามต้องการ)
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appScreen').style.display = 'block';
-      document.getElementById('fabControls').style.display = 'flex';
-      initApp();
-    } else {
-      btn.innerText = 'เข้าสู่ระบบ';
-      Swal.fire('รหัสผิด!', 'กรุณาลองใหม่อีกครั้ง', 'error');
-      document.getElementById('pinInput').value = '';
-    }
-  }
-  function logout() {
-    Swal.fire({ title: 'ออกจากระบบ?', icon: 'warning', showCancelButton: true }).then((result) => {
-      if (result.isConfirmed) location.reload();
-    });
   }
 
   // --- Initializing App ---
@@ -384,20 +446,33 @@
         let maintStatus = v.remainDist < 0 ? `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>` : 
                           v.remainDist <= 1000 ? `<span class="badge bg-warning text-dark">เหลือ ${v.remainDist.toLocaleString()}</span>` : 
                           `<span class="badge bg-light text-secondary">ปกติ</span>`;
-        html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer"><td class="fw-bold">${v.plate}</td><td class="text-end">${v.totalDist.toLocaleString()}</td><td class="text-end">${v.totalLiters.toFixed(1)}</td><td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td><td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td><td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td><td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td><td class="text-center">${maintStatus}</td></tr>`;
+        html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer"><td class="fw-bold">${v.plate}</td><td class="text-end">${v.totalDist.toLocaleString()}</td><td class="text-end">${v.totalLiters.toFixed(1)}</td><td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td><td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td><td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td><td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td><td class="text-center no-export">${maintStatus}</td></tr>`;
     });
     document.getElementById('tableBody').innerHTML = html;
   }
 
   function renderAllLogsTable(logs) {
     logs.sort((a,b) => b.date.localeCompare(a.date));
-    let html = logs.map(log => {
-       let badge = log.type === 'fuel' ? '<i class="fas fa-gas-pump text-success"></i>' : log.type === 'wash' ? '<i class="fas fa-shower text-info"></i>' : '<i class="fas fa-wrench text-warning"></i>';
+    
+    let fuelHtml = "";
+    let repairHtml = "";
+
+    logs.forEach(log => {
        let rawJson = JSON.stringify(log).replace(/"/g, "&quot;");
-       return `<tr><td>${formatDate(log.date)}</td><td class="fw-bold">${log.plate}</td><td>${badge} ${log.detail}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td><td class="text-center"><button class="btn btn-sm btn-light text-primary" onclick='editItem("${log.source}", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('${log.source}', ${log.row})"><i class="fas fa-trash"></i></button></td></tr>`;
-    }).join('');
-    document.getElementById('logTableBody').innerHTML = html || '<tr><td colspan="5" class="text-center py-5">ไม่มีข้อมูล</td></tr>';
-    document.getElementById('logCountText').innerText = `พบ ${logs.length} รายการ`;
+       
+       if (log.source === 'fuel') {
+           let badge = log.type === 'fuel' ? '<i class="fas fa-gas-pump text-success"></i>' : '<i class="fas fa-shower text-info"></i>';
+           let litersText = log.type === 'fuel' ? log.liters.toFixed(1) : '-';
+           fuelHtml += `<tr><td>${formatDate(log.date)}</td><td class="fw-bold">${log.plate}</td><td>${badge} ${log.detail}</td><td class="text-end">${litersText}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td><td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td></tr>`;
+       } else if (log.source === 'repair') {
+           let mechanic = log.mechanic || "-";
+           let mileText = log.mile ? log.mile.toLocaleString() : "-";
+           repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="fw-bold">${log.plate}</td><td class="text-end">${mileText}</td><td>🔧 ${log.detail}</td><td>${mechanic}</td><td class="text-end fw-bold text-danger">${log.cost.toLocaleString()}</td><td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("repair", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('repair', ${log.row})"><i class="fas fa-trash"></i></button></td></tr>`;
+       }
+    });
+
+    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || '<tr><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr>';
+    document.getElementById('repairLogTableBody').innerHTML = repairHtml || '<tr><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr>';
   }
   
   function showDetail(plate) {
@@ -578,7 +653,6 @@
       const rows = document.querySelectorAll('.repair-item-row');
       if(rows.length > 1) {
           btn.parentElement.remove();
-          // อัปเดตราคารวม
           let total = 0;
           document.querySelectorAll('.repair-item-cost').forEach(input => { total += Number(input.value) || 0; });
           document.getElementById('repairTotalCost').innerText = total.toLocaleString();
@@ -676,12 +750,66 @@
     });
   }
 
-  // Utilities
+  // --- Utilities & Table Features ---
   function updateStat(id, val, suffix) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + suffix; el.className = val >= 0 ? "fw-bold mb-0 text-success" : "fw-bold mb-0 text-danger"; } }
   function updatePopStat(id, val) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); } }
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
   function formatDate(d) { return d ? d.split('-').reverse().join('/') : ''; }
   function filterTable(tableId, val) { val = val.toLowerCase(); document.querySelectorAll(`#${tableId} tbody tr`).forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none'); }
+  
+  // Sort Table Function
+  function sortTable(tableId, colIndex, isNumeric) {
+      if (sortDirection[tableId] === undefined) sortDirection[tableId] = true;
+      else sortDirection[tableId] = !sortDirection[tableId];
+
+      let table = document.getElementById(tableId);
+      let tbody = table.tBodies[0];
+      let rows = Array.from(tbody.querySelectorAll("tr"));
+
+      // ถ้าเป็นแถว Loading/ไม่มีข้อมูล ไม่ต้องเรียง
+      if(rows.length === 1 && rows[0].cells.length === 1) return;
+
+      rows.sort((a, b) => {
+          let valA = a.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0]; // split(' ') จัดการกับเรท/STD
+          let valB = b.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0];
+
+          if (isNumeric) {
+              let numA = parseFloat(valA) || 0;
+              let numB = parseFloat(valB) || 0;
+              return sortDirection[tableId] ? numA - numB : numB - numA;
+          } else {
+              return sortDirection[tableId] ? valA.localeCompare(valB, 'th') : valB.localeCompare(valA, 'th');
+          }
+      });
+      
+      tbody.append(...rows);
+  }
+
+  // Export to Excel (XLS)
+  function exportExcel(tableId, filename) {
+      let table = document.getElementById(tableId);
+      let cloneTable = table.cloneNode(true);
+      
+      // ลบคอลัมน์ "จัดการ" และคอลัมน์ที่ไม่ต้องการส่งออก (คลาส no-export)
+      let ths = cloneTable.querySelectorAll('th.no-export');
+      let tds = cloneTable.querySelectorAll('td.no-export');
+      ths.forEach(el => el.remove());
+      tds.forEach(el => el.remove());
+
+      let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="UTF-8">
+      <style>table { border-collapse: collapse; } th, td { border: 1px solid black; padding: 5px; text-align: left; }</style>
+      </head>
+      <body>${cloneTable.outerHTML}</body>
+      </html>`;
+      
+      let blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename + '_' + document.getElementById('filterYear').value + '_' + document.getElementById('filterMonth').value + '.xls';
+      link.click();
+  }
 </script>
 </body>
 </html>
