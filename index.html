@@ -23,8 +23,10 @@
     .table-responsive { max-height: 60vh; overflow-y: auto; }
     .table-responsive thead th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; border-bottom: 2px solid #dee2e6; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
     
+    /* แก้ไขสีบวก/ลบ */
     .val-pos { color: #198754; font-weight: bold; } 
     .val-neg { color: #dc3545; font-weight: bold; } 
+    
     .navbar { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
     .modal-stat-box { background: #fff; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; text-align: center; height: 100%; }
@@ -33,10 +35,6 @@
     .nav-tabs .nav-link { color: #495057; font-weight: 600; cursor: pointer; }
     .nav-tabs .nav-link.active { color: #0d6efd; border-bottom: 3px solid #0d6efd; }
     .sortable:hover { background-color: #e9ecef; cursor: pointer; }
-
-    /* ปุ่ม Action กลางจอ */
-    .action-btn { transition: transform 0.2s, box-shadow 0.2s; }
-    .action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15) !important; }
   </style>
 </head>
 <body>
@@ -52,11 +50,12 @@
 </div>
 
 <div id="appScreen" style="display: none;">
-  <nav class="navbar sticky-top mb-3">
-    <div class="container-custom d-flex justify-content-between">
-      <div class="d-flex align-items-center">
-         <span class="navbar-brand fw-bold text-primary me-3"><i class="fas fa-chart-line"></i> VKT Analytics</span>
-         <div class="d-flex align-items-center bg-light border rounded px-2 d-none d-md-flex">
+  <nav class="navbar sticky-top mb-3 py-2">
+    <div class="container-custom d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+         <span class="navbar-brand fw-bold text-primary m-0"><i class="fas fa-chart-line"></i> VKT Analytics</span>
+         
+         <div class="d-flex align-items-center bg-light border rounded px-2">
             <select id="filterYear" class="form-select form-select-sm border-0 bg-transparent" onchange="processData()" style="width: auto;"></select>
             <select id="filterMonth" class="form-select form-select-sm border-0 bg-transparent" onchange="processData()" style="width: auto;">
                <option value="all">ทุกเดือน</option>
@@ -66,29 +65,30 @@
                <option value="10">ต.ค.</option><option value="11">พ.ย.</option><option value="12">ธ.ค.</option>
             </select>
          </div>
+
+         <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-success fw-bold shadow-sm rounded-pill px-3" onclick="openFuelModal()">
+              <i class="fas fa-gas-pump me-1"></i> น้ำมัน/ล้างรถ
+            </button>
+            <button class="btn btn-sm btn-warning text-dark fw-bold shadow-sm rounded-pill px-3" onclick="openRepairModal()">
+              <i class="fas fa-wrench me-1"></i> แจ้งซ่อม
+            </button>
+         </div>
       </div>
+      
       <div class="d-flex gap-2 align-items-center">
-         <button class="btn btn-sm btn-outline-secondary" onclick="loadData()"><i class="fas fa-sync"></i></button>
-         <button class="btn btn-sm btn-danger ms-2" onclick="logout()"><i class="fas fa-power-off"></i></button>
+         <button class="btn btn-sm btn-outline-secondary" onclick="loadData()" title="รีเฟรชข้อมูล"><i class="fas fa-sync"></i></button>
+         <button class="btn btn-sm btn-danger ms-1" onclick="logout()" title="ออกจากระบบ"><i class="fas fa-power-off"></i></button>
       </div>
     </div>
   </nav>
 
   <div class="container-custom">
-    <div class="row g-2 mb-4">
+    <div class="row g-2 mb-3">
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-info"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-info" id="fleetWash">0</h4></div></div>
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
-    </div>
-
-    <div class="d-flex justify-content-center gap-3 mb-4">
-      <button class="btn btn-success btn-lg px-4 fw-bold shadow-sm rounded-pill action-btn" onclick="openFuelModal()">
-        <i class="fas fa-gas-pump me-2"></i> บันทึกน้ำมัน / ล้างรถ
-      </button>
-      <button class="btn btn-warning text-dark btn-lg px-4 fw-bold shadow-sm rounded-pill action-btn" onclick="openRepairModal()">
-        <i class="fas fa-wrench me-2"></i> แจ้งซ่อมบำรุง
-      </button>
     </div>
 
     <ul class="nav nav-tabs mb-2" id="mainTab" role="tablist">
@@ -123,12 +123,14 @@
                   <th class="sortable text-center" onclick="sortTable('fleetTable', 4, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end" onclick="sortTable('fleetTable', 5, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end" onclick="sortTable('fleetTable', 6, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 7, true)">รวมเงิน (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fleetTable', 8, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 7, true)">ค่าน้ำมัน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end text-danger" onclick="sortTable('fleetTable', 8, true)">ค่าซ่อม <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 9, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">เช็คระยะ</th>
                 </tr>
               </thead>
-              <tbody id="tableBody"><tr class="no-data-row"><td colspan="10" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
+              <tbody id="tableBody"><tr class="no-data-row"><td colspan="11" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
           <div id="pg-fleetTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
@@ -240,7 +242,7 @@
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">จำนวนเติม</div><div class="modal-stat-value text-dark" id="popCount">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">ล้างรถ (ครั้ง)</div><div class="modal-stat-value text-info" id="popWashCount">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมลิตร</div><div class="modal-stat-value text-primary" id="popLiters">0</div></div></div>
-              <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมเงิน</div><div class="modal-stat-value text-dark" id="popCost">0</div></div></div>
+              <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">ค่าน้ำมันรวม</div><div class="modal-stat-value text-dark" id="popCost">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">เรทเฉลี่ย</div><div class="modal-stat-value text-info" id="popRate">0.00</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมต่าง (บาท)</div><div class="modal-stat-value" id="popDiffB">0</div></div></div>
             </div>
@@ -358,7 +360,6 @@
   let modalRepairPage = 1;
   const MODAL_PAGE_SIZE = 15;
 
-  // --- ระบบ Login & Enter Key ---
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') checkLogin();
   });
@@ -384,7 +385,6 @@
     });
   }
 
-  // --- API Wrapper ---
   async function callAPI(payload) {
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -403,7 +403,6 @@
     }
   }
 
-  // --- Initializing App ---
   function initApp() {
     let yearSel = document.getElementById('filterYear');
     let currYear = new Date().getFullYear();
@@ -443,7 +442,13 @@
     
     let vehicleMap = {};
     MasterVehicles.forEach(v => {
-       vehicleMap[v.plate] = { ...v, totalDist:0, totalLiters:0, totalCost:0, diffLiters:0, diffBaht:0, washCount:0, lastMile:0, lastOilChange:0, remainDist:0 };
+       vehicleMap[v.plate] = { 
+           ...v, 
+           totalDist:0, totalLiters:0, 
+           totalFuelCost:0, totalRepairCost:0, // แยกค่าใช้จ่าย
+           diffLiters:0, diffBaht:0, 
+           washCount:0, lastMile:0, lastOilChange:0, remainDist:0 
+       };
     });
 
     RawLogs.forEach(log => {
@@ -467,22 +472,28 @@
     FilteredLogs.forEach(log => {
         let v = vehicleMap[log.plate];
         if (v) {
-            v.totalCost += (log.cost || 0);
-            if (log.type === 'fuel') {
-                v.totalDist += (log.tripA || 0);
-                v.totalLiters += (log.liters || 0);
-                v.diffLiters += (log.diffLiters || 0);
-                v.diffBaht += (log.diffBaht || 0);
+            if (log.type === 'fuel' || log.type === 'wash') {
+                v.totalFuelCost += (log.cost || 0); // บันทึกเข้าน้ำมัน
+                if (log.type === 'fuel') {
+                    v.totalDist += (log.tripA || 0);
+                    v.totalLiters += (log.liters || 0);
+                    v.diffLiters += (log.diffLiters || 0);
+                    v.diffBaht += (log.diffBaht || 0);
+                }
+                let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
+                if (wHead > 0 || wTail > 0) v.washCount += (wHead + wTail);
+            } else if (log.type === 'repair') {
+                v.totalRepairCost += (log.cost || 0); // บันทึกเข้าซ่อม
             }
-            let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
-            if (wHead > 0 || wTail > 0) v.washCount += (wHead + wTail);
         }
     });
 
     let totalFleetDist=0, totalFleetCost=0, totalFleetDiffB=0, totalFleetWash=0;
     Object.values(vehicleMap).forEach(v => {
-        totalFleetDist += v.totalDist; totalFleetCost += v.totalCost;
-        totalFleetDiffB += v.diffBaht; totalFleetWash += v.washCount; 
+        totalFleetDist += v.totalDist; 
+        totalFleetCost += (v.totalFuelCost + v.totalRepairCost);
+        totalFleetDiffB += v.diffBaht; 
+        totalFleetWash += v.washCount; 
         v.remainDist = (v.lastOilChange + v.interval) - v.lastMile;
     });
 
@@ -495,7 +506,6 @@
     renderAllLogsTable(FilteredLogs);
   }
 
-  // --- Rendering UI & Pagination ---
   function renderSummaryTable(vehicleMap) {
     let html = "";
     Object.values(vehicleMap).forEach(v => {
@@ -512,12 +522,13 @@
                     <td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td>
                     <td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td>
                     <td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td>
-                    <td class="text-end fw-bold text-dark">${v.totalCost.toLocaleString()}</td>
+                    <td class="text-end fw-bold text-dark">${v.totalFuelCost.toLocaleString()}</td>
+                    <td class="text-end fw-bold text-danger">${v.totalRepairCost.toLocaleString()}</td>
                     <td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td>
                     <td class="text-center no-export">${maintStatus}</td>
                  </tr>`;
     });
-    document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="10" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="11" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     changePage('fleetTable', 1);
   }
 
@@ -639,8 +650,7 @@
       }
       pgDiv.innerHTML = html;
   }
-  
-  // --- Popup Show Detail ---
+
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
     let currentCar = MasterVehicles.find(v => v.plate === plate);
@@ -784,7 +794,6 @@
       document.getElementById('modalRepairPagination').innerHTML = pgHtml;
   }
   
-  // --- Form Logic & API Calls ---
   function setMode(mode) {
     document.getElementById('fuelMode').value = mode;
     document.getElementById('fuelLiters').required = (mode === 'fuel');
