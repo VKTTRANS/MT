@@ -22,7 +22,7 @@
     
     .table-responsive { max-height: 60vh; overflow-y: auto; }
     .table-responsive thead th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; border-bottom: 2px solid #dee2e6; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
-
+    
     .val-pos { color: #198754; font-weight: bold; } 
     .val-neg { color: #dc3545; font-weight: bold; } 
     
@@ -108,6 +108,7 @@
             </select>
             <input type="text" id="search-fleetTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหาทะเบียน..." onkeyup="changePage('fleetTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export</button>
+            <button class="btn btn-sm btn-danger text-nowrap" onclick="exportMaintenanceAlert()"><i class="fas fa-bell"></i> รถใกล้ถึงรอบ</button>
           </div>
         </div>
         <div class="table-card">
@@ -124,7 +125,6 @@
                   <th class="sortable text-end" onclick="sortTable('fleetTable', 6, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end" onclick="sortTable('fleetTable', 7, true)">ค่าน้ำมัน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end text-danger" onclick="sortTable('fleetTable', 8, true)">ค่าซ่อม <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  
                   <th class="sortable text-center" onclick="sortTable('fleetTable', 9, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">เช็คระยะ</th>
                 </tr>
@@ -359,6 +359,7 @@
   let modalRepairPage = 1;
   const MODAL_PAGE_SIZE = 15;
 
+  // --- ระบบ Login & Enter Key ---
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') checkLogin();
   });
@@ -384,6 +385,7 @@
     });
   }
 
+  // --- API Wrapper ---
   async function callAPI(payload) {
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -402,6 +404,7 @@
     }
   }
 
+  // --- Initializing App ---
   function initApp() {
     let yearSel = document.getElementById('filterYear');
     let currYear = new Date().getFullYear();
@@ -444,7 +447,7 @@
        vehicleMap[v.plate] = { 
            ...v, 
            totalDist:0, totalLiters:0, 
-           totalFuelCost:0, totalRepairCost:0, // แยกค่าใช้จ่าย
+           totalFuelCost:0, totalRepairCost:0, 
            diffLiters:0, diffBaht:0, 
            washCount:0, lastMile:0, lastOilChange:0, remainDist:0 
        };
@@ -472,7 +475,7 @@
         let v = vehicleMap[log.plate];
         if (v) {
             if (log.type === 'fuel' || log.type === 'wash') {
-                v.totalFuelCost += (log.cost || 0); // บันทึกเข้าน้ำมัน
+                v.totalFuelCost += (log.cost || 0);
                 if (log.type === 'fuel') {
                     v.totalDist += (log.tripA || 0);
                     v.totalLiters += (log.liters || 0);
@@ -482,7 +485,7 @@
                 let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
                 if (wHead > 0 || wTail > 0) v.washCount += (wHead + wTail);
             } else if (log.type === 'repair') {
-                v.totalRepairCost += (log.cost || 0); // บันทึกเข้าซ่อม
+                v.totalRepairCost += (log.cost || 0);
             }
         }
     });
@@ -495,6 +498,8 @@
         totalFleetWash += v.washCount; 
         v.remainDist = (v.lastOilChange + v.interval) - v.lastMile;
     });
+
+    window.currentVehicleMap = vehicleMap;
 
     document.getElementById('fleetDist').innerText = totalFleetDist.toLocaleString();
     document.getElementById('fleetCost').innerText = totalFleetCost.toLocaleString();
@@ -509,9 +514,16 @@
     let html = "";
     Object.values(vehicleMap).forEach(v => {
         let avgRate = v.totalLiters > 0 ? (v.totalDist / v.totalLiters) : 0;
-        let maintStatus = v.remainDist < 0 ? `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>` : 
-                          v.remainDist <= 1000 ? `<span class="badge bg-warning text-dark">เหลือ ${v.remainDist.toLocaleString()}</span>` : 
-                          `<span class="badge bg-light text-secondary">ปกติ</span>`;
+        
+        // 🟡 ปรับเงื่อนไขให้แจ้งเตือนเริ่มที่ 2000 กม. 🟡
+        let maintStatus = "";
+        if (v.remainDist < 0) {
+            maintStatus = `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>`;
+        } else if (v.remainDist <= 2000) {
+            maintStatus = `<span class="badge bg-warning text-dark">เหลือ ${v.remainDist.toLocaleString()}</span>`;
+        } else {
+            maintStatus = `<span class="badge bg-light text-secondary">ปกติ</span>`;
+        }
                           
         html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer">
                     <td class="fw-bold">${v.plate}</td>
@@ -542,38 +554,24 @@
        
        if (log.source === 'fuel') {
            let badge = log.type === 'fuel' ? '<i class="fas fa-gas-pump text-success"></i>' : '<i class="fas fa-shower text-info"></i>';
+           let litersText = log.type === 'fuel' ? log.liters.toFixed(1) : '-';
            
-           if (log.type === 'fuel') {
-               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
-               fuelHtml += `<tr>
-                 <td>${formatDate(log.date)}</td>
-                 <td class="fw-bold">${log.plate}</td>
-                 <td>${badge} ${log.detail}</td>
-                 <td class="text-end">${log.tripA || 0}</td>
-                 <td class="text-end">${log.liters.toFixed(1)}</td>
-                 <td class="text-end">${(log.price || 0).toFixed(2)}</td>
-                 <td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td>
-                 <td class="text-end ${log.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(log.diffLiters)}</td>
-                 <td class="text-end ${log.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(log.diffBaht)}</td>
-                 <td class="text-end fw-bold">${log.cost.toLocaleString()}</td>
-                 <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
-               </tr>`;
-           } else {
-               fuelHtml += `<tr>
-                 <td>${formatDate(log.date)}</td>
-                 <td class="fw-bold">${log.plate}</td>
-                 <td>${badge} ${log.detail}</td>
-                 <td class="text-end">-</td>
-                 <td class="text-end">-</td>
-                 <td class="text-end">-</td>
-                 <td class="text-center">-</td>
-                 <td class="text-end">-</td>
-                 <td class="text-end">-</td>
-                 <td class="text-end fw-bold text-muted">${log.cost.toLocaleString()}</td>
-                 <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
-               </tr>`;
-           }
-
+           let diffLClass = log.diffLiters >= 0 ? 'val-pos' : 'val-neg';
+           let diffBClass = log.diffBaht >= 0 ? 'val-pos' : 'val-neg';
+           
+           fuelHtml += `<tr>
+             <td>${formatDate(log.date)}</td>
+             <td class="fw-bold">${log.plate}</td>
+             <td>${badge} ${log.detail}</td>
+             <td class="text-end">${log.tripA || 0}</td>
+             <td class="text-end">${litersText}</td>
+             <td class="text-end">${(log.price || 0).toFixed(2)}</td>
+             <td class="text-center">${log.type === 'fuel' ? log.currentRate.toFixed(2) : '-'}</td>
+             <td class="text-end ${diffLClass}">${log.type === 'fuel' ? formatNum(log.diffLiters) : '-'}</td>
+             <td class="text-end ${diffBClass}">${log.type === 'fuel' ? formatNum(log.diffBaht) : '-'}</td>
+             <td class="text-end fw-bold">${log.cost.toLocaleString()}</td>
+             <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
+           </tr>`;
        } else if (log.source === 'repair') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
@@ -591,8 +589,9 @@
   function isRowMatch(row, tableId) {
       let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
       let matchSearch = row.innerText.toLowerCase().includes(searchInput);
+      if (tableId === 'fleetTable') return matchSearch;
+
       let matchPlate = true;
-      
       if (tableId === 'fuelLogTable') {
           let p = document.getElementById('filter-plate-fuel').value;
           if(p) matchPlate = (row.cells[1].innerText.trim() === p);
@@ -677,11 +676,13 @@
     let boxRemain = document.getElementById('boxRemainDist');
     if(elRemain && boxRemain) {
         elRemain.innerText = remainDist.toLocaleString();
+        
+        // 🟡 ปรับเงื่อนไขหน้าดีเทลแจ้งเตือนเริ่มที่ 2000 กม. 🟡
         if (remainDist < 0) {
             elRemain.className = "modal-stat-value text-danger";
             boxRemain.className = "modal-stat-box bg-danger bg-opacity-10 border-danger";
             elRemain.innerText += " (เกินกำหนด)";
-        } else if (remainDist <= 1000) {
+        } else if (remainDist <= 2000) {
             elRemain.className = "modal-stat-value text-warning";
             boxRemain.className = "modal-stat-box bg-warning bg-opacity-10 border-warning";
         } else {
@@ -982,6 +983,7 @@
     });
   }
 
+  // --- Utilities & Table Features ---
   function updateStat(id, val, suffix) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + suffix; el.className = val >= 0 ? "fw-bold mb-0 text-success" : "fw-bold mb-0 text-danger"; } }
   function updatePopStat(id, val) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); } }
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
@@ -1045,6 +1047,57 @@
       let link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = filename + '_' + document.getElementById('filterYear').value + '_' + document.getElementById('filterMonth').value + '.xls';
+      link.click();
+  }
+
+  // --- Export รถที่ใกล้ถึงรอบถ่ายน้ำมันเครื่อง (ปรับเป็น 2,000 กม.) ---
+  function exportMaintenanceAlert() {
+      if(!window.currentVehicleMap) return Swal.fire('แจ้งเตือน', 'กำลังโหลดข้อมูล โปรดรอสักครู่', 'warning');
+      
+      let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="UTF-8"><style>table { border-collapse: collapse; } th, td { border: 1px solid black; padding: 5px; }</style></head>
+      <body>
+      <h3 style="font-family: sans-serif;">รายการรถยนต์ที่ถึงกำหนด / ใกล้ถึงรอบถ่ายน้ำมันเครื่อง (เตือนล่วงหน้า 2,000 กม.)</h3>
+      <table>
+      <thead><tr style="background-color: #f8f9fa;">
+          <th>ทะเบียน</th>
+          <th>ประเภทรถ</th>
+          <th>เลขไมล์ล่าสุด</th>
+          <th>ระยะถ่ายน้ำมันเครื่อง (กม.)</th>
+          <th>สถานะ</th>
+      </tr></thead><tbody>`;
+      
+      let count = 0;
+      Object.values(window.currentVehicleMap).forEach(v => {
+          // 🟡 ดึงเฉพาะรถที่ติดลบ (เกินกำหนด) หรือ เหลือไม่เกิน 2,000 กม. 🟡
+          if (v.remainDist <= 2000) { 
+              count++;
+              let statusText = v.remainDist < 0 ? `เกินกำหนด ${Math.abs(v.remainDist).toLocaleString()} กม.` : `เหลือ ${v.remainDist.toLocaleString()} กม.`;
+              let statusColor = v.remainDist < 0 ? '#dc3545' : '#d39e00'; 
+              
+              html += `<tr>
+                  <td>${v.plate}</td>
+                  <td>${v.type || '-'}</td>
+                  <td style="text-align: right;">${v.lastMile.toLocaleString()}</td>
+                  <td style="text-align: right;">${v.interval.toLocaleString()}</td>
+                  <td style="color: ${statusColor}; font-weight: bold;">${statusText}</td>
+              </tr>`;
+          }
+      });
+
+      html += `</tbody></table></body></html>`;
+
+      if(count === 0) {
+          return Swal.fire('ยอดเยี่ยม!', 'ไม่มีรถคันไหนใกล้ถึงรอบถ่ายน้ำมันเครื่อง (2,000 กม.) เลยครับ', 'success');
+      }
+      
+      let blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      let d = new Date();
+      let dateStr = `${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2, '0')}${d.getDate().toString().padStart(2, '0')}`;
+      link.download = `แจ้งเตือนเข้าซ่อมบำรุง_${dateStr}.xls`;
       link.click();
   }
 </script>
