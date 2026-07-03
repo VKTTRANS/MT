@@ -13,8 +13,18 @@
     #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); z-index: 10000; display: flex; align-items: center; justify-content: center; }
     .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
     .container-custom { width: 95%; max-width: 1800px; margin: 0 auto; }
-    .card-stat { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    
+    /* ปรับขนาดส่วนการ์ดสรุปผลให้เล็กลง */
+    .card-stat { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .card-stat h4 { font-size: 1.25rem; }
+    .card-stat small { font-size: 0.8rem; }
+    
     .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
+    /* ตรึงหัวตาราง (Sticky Header) */
+    .table-responsive { max-height: 65vh; overflow-y: auto; }
+    .table-responsive thead th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; border-bottom: 2px solid #dee2e6; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
+    
     .val-pos { color: #198754; font-weight: bold; } 
     .val-neg { color: #dc3545; font-weight: bold; } 
     .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
@@ -66,14 +76,14 @@
   </nav>
 
   <div class="container-custom">
-    <div class="row g-3 mb-4">
+    <div class="row g-2 mb-3">
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-info"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-info" id="fleetWash">0</h4></div></div>
       <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
     </div>
 
-    <ul class="nav nav-tabs mb-3" id="mainTab" role="tablist">
+    <ul class="nav nav-tabs mb-2" id="mainTab" role="tablist">
       <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-summary">📊 สรุปรายคัน</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fuel-logs">⛽ ประวัติน้ำมัน/ล้างรถ</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-repair-logs">🔧 ประวัติซ่อมบำรุง</button></li>
@@ -82,10 +92,10 @@
     <div class="tab-content">
       <div class="tab-pane fade show active" id="tab-summary">
         <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-          <h5 class="fw-bold m-0 text-secondary">สถานะปัจจุบัน</h5>
+          <h6 class="fw-bold m-0 text-secondary">สถานะปัจจุบัน</h6>
           <div class="d-flex gap-2">
             <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="🔍 ค้นหาทะเบียน..." onkeyup="filterTable('fleetTable', this.value)">
-            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
@@ -94,16 +104,17 @@
               <thead class="table-light">
                 <tr>
                   <th class="sortable" onclick="sortTable('fleetTable', 0, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 1, true)">ระยะทาง <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 2, true)">เติมจริง <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fleetTable', 3, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 4, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 5, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fleetTable', 6, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 1, false)">ประเภทรถ <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 2, true)">ระยะทาง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 3, true)">เติมจริง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 4, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 5, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 6, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 7, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center">เช็คระยะ</th>
                 </tr>
               </thead>
-              <tbody id="tableBody"><tr><td colspan="8" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
+              <tbody id="tableBody"><tr><td colspan="9" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -111,10 +122,10 @@
 
       <div class="tab-pane fade" id="tab-fuel-logs">
         <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-          <h5 class="fw-bold m-0 text-success">⛽ ประวัติเติมน้ำมัน และล้างรถ</h5>
+          <h6 class="fw-bold m-0 text-success">⛽ ประวัติเติมน้ำมัน และล้างรถ</h6>
           <div class="d-flex gap-2">
             <input type="text" class="form-control form-control-sm" placeholder="🔍 ค้นหา..." onkeyup="filterTable('fuelLogTable', this.value)">
-            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
@@ -138,10 +149,10 @@
 
       <div class="tab-pane fade" id="tab-repair-logs">
         <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-          <h5 class="fw-bold m-0 text-warning text-dark">🔧 ประวัติซ่อมบำรุง</h5>
+          <h6 class="fw-bold m-0 text-warning text-dark">🔧 ประวัติซ่อมบำรุง</h6>
           <div class="d-flex gap-2">
             <input type="text" class="form-control form-control-sm" placeholder="🔍 ค้นหา..." onkeyup="filterTable('repairLogTable', this.value)">
-            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
@@ -203,7 +214,7 @@
             <div class="bg-white rounded shadow-sm overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-striped mb-0">
-                  <thead class="table-light"><tr><th>วันที่</th><th>รายการ</th><th class="text-end">Trip A</th><th class="text-end">ลิตร</th><th class="text-center">เรท</th><th class="text-end">ต่าง(L)</th><th class="text-end">ต่าง(฿)</th><th class="text-end">รวมเงิน</th></tr></thead>
+                  <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่</th><th style="position: sticky; top:0; background: #f8f9fa;">รายการ</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">Trip A</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ลิตร</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-center">เรท</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(L)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(฿)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">รวมเงิน</th></tr></thead>
                   <tbody id="detailFuelBody"></tbody>
                 </table>
               </div>
@@ -222,7 +233,7 @@
             <div class="bg-white rounded shadow-sm overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-striped mb-0 text-nowrap">
-                  <thead class="table-light"><tr><th>วันที่</th><th class="text-end">เลขไมล์</th><th>รายการซ่อม</th><th>ช่าง/อู่</th><th class="text-end">ค่าใช้จ่าย</th></tr></thead>
+                  <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">เลขไมล์</th><th style="position: sticky; top:0; background: #f8f9fa;">รายการซ่อม</th><th style="position: sticky; top:0; background: #f8f9fa;">ช่าง/อู่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ค่าใช้จ่าย</th></tr></thead>
                   <tbody id="detailRepairBody"></tbody>
                 </table>
               </div>
@@ -302,7 +313,7 @@
   let MasterVehicles = [];
   let RawLogs = []; 
   let FilteredLogs = []; 
-  let sortDirection = {}; // เก็บสถานะการเรียงลำดับของแต่ละตาราง
+  let sortDirection = {}; 
 
   // --- ระบบ Login & Enter Key ---
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
@@ -446,7 +457,18 @@
         let maintStatus = v.remainDist < 0 ? `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>` : 
                           v.remainDist <= 1000 ? `<span class="badge bg-warning text-dark">เหลือ ${v.remainDist.toLocaleString()}</span>` : 
                           `<span class="badge bg-light text-secondary">ปกติ</span>`;
-        html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer"><td class="fw-bold">${v.plate}</td><td class="text-end">${v.totalDist.toLocaleString()}</td><td class="text-end">${v.totalLiters.toFixed(1)}</td><td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td><td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td><td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td><td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td><td class="text-center no-export">${maintStatus}</td></tr>`;
+        // เพิ่ม v.type ตรงช่องประเภทรถ
+        html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer">
+                    <td class="fw-bold">${v.plate}</td>
+                    <td class="text-center">${v.type || '-'}</td>
+                    <td class="text-end">${v.totalDist.toLocaleString()}</td>
+                    <td class="text-end">${v.totalLiters.toFixed(1)}</td>
+                    <td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td>
+                    <td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td>
+                    <td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td>
+                    <td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td>
+                    <td class="text-center no-export">${maintStatus}</td>
+                 </tr>`;
     });
     document.getElementById('tableBody').innerHTML = html;
   }
@@ -766,11 +788,10 @@
       let tbody = table.tBodies[0];
       let rows = Array.from(tbody.querySelectorAll("tr"));
 
-      // ถ้าเป็นแถว Loading/ไม่มีข้อมูล ไม่ต้องเรียง
       if(rows.length === 1 && rows[0].cells.length === 1) return;
 
       rows.sort((a, b) => {
-          let valA = a.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0]; // split(' ') จัดการกับเรท/STD
+          let valA = a.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0]; 
           let valB = b.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0];
 
           if (isNumeric) {
@@ -790,7 +811,6 @@
       let table = document.getElementById(tableId);
       let cloneTable = table.cloneNode(true);
       
-      // ลบคอลัมน์ "จัดการ" และคอลัมน์ที่ไม่ต้องการส่งออก (คลาส no-export)
       let ths = cloneTable.querySelectorAll('th.no-export');
       let tds = cloneTable.querySelectorAll('td.no-export');
       ths.forEach(el => el.remove());
