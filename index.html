@@ -146,12 +146,17 @@
                   <th class="sortable" onclick="sortTable('fuelLogTable', 0, false)">วันที่ <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable" onclick="sortTable('fuelLogTable', 1, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th>รายการ</th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 3, true)">ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 4, true)">บาท <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 3, true)">Trip A <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 4, true)">ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 5, true)">ราคา/ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fuelLogTable', 6, true)">เรท <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 7, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 8, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 9, true)">รวมเงิน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">จัดการ</th>
                 </tr>
               </thead>
-              <tbody id="fuelLogTableBody"><tr class="no-data-row"><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+              <tbody id="fuelLogTableBody"><tr class="no-data-row"><td colspan="11" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
           <div id="pg-fuelLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
@@ -493,7 +498,6 @@
     });
     document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="10" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     
-    // อัปเดตการแสดงผลหน้าเพจ
     changePage('fleetTable', 1);
   }
 
@@ -508,8 +512,39 @@
        
        if (log.source === 'fuel') {
            let badge = log.type === 'fuel' ? '<i class="fas fa-gas-pump text-success"></i>' : '<i class="fas fa-shower text-info"></i>';
-           let litersText = log.type === 'fuel' ? log.liters.toFixed(1) : '-';
-           fuelHtml += `<tr><td>${formatDate(log.date)}</td><td class="fw-bold">${log.plate}</td><td>${badge} ${log.detail}</td><td class="text-end">${litersText}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td><td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td></tr>`;
+           
+           if (log.type === 'fuel') {
+               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark'; // ตกแต่งสีให้เรท
+               fuelHtml += `<tr>
+                 <td>${formatDate(log.date)}</td>
+                 <td class="fw-bold">${log.plate}</td>
+                 <td>${badge} ${log.detail}</td>
+                 <td class="text-end">${log.tripA || 0}</td>
+                 <td class="text-end">${log.liters.toFixed(1)}</td>
+                 <td class="text-end">${(log.price || 0).toFixed(2)}</td>
+                 <td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td>
+                 <td class="text-end ${log.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(log.diffLiters)}</td>
+                 <td class="text-end ${log.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(log.diffBaht)}</td>
+                 <td class="text-end fw-bold">${log.cost.toLocaleString()}</td>
+                 <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
+               </tr>`;
+           } else {
+               // กรณีล้างรถ ขีดแดช (-) ไว้เพื่อไม่ให้รก
+               fuelHtml += `<tr>
+                 <td>${formatDate(log.date)}</td>
+                 <td class="fw-bold">${log.plate}</td>
+                 <td>${badge} ${log.detail}</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-center">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end fw-bold text-muted">${log.cost.toLocaleString()}</td>
+                 <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
+               </tr>`;
+           }
+
        } else if (log.source === 'repair') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
@@ -517,7 +552,7 @@
        }
     });
 
-    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || `<tr class="no-data-row"><td colspan="6" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || `<tr class="no-data-row"><td colspan="11" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     document.getElementById('repairLogTableBody').innerHTML = repairHtml || `<tr class="no-data-row"><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     
     changePage('fuelLogTable', 1);
@@ -537,7 +572,6 @@
       let rows = Array.from(tbody.querySelectorAll('tr:not(.no-data-row)'));
       let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
 
-      // กรองแถวตาม Search
       let filteredRows = rows.filter(row => row.innerText.toLowerCase().includes(searchInput));
       let totalItems = filteredRows.length;
       let totalPages = limit === -1 ? 1 : Math.ceil(totalItems / limit);
@@ -550,10 +584,8 @@
       let start = (page - 1) * limit;
       let end = limit === -1 ? totalItems : start + limit;
 
-      // ซ่อนทั้งหมดก่อน
       rows.forEach(r => r.style.display = 'none');
       
-      // แสดงเฉพาะหน้าปัจจุบัน
       for(let i = start; i < end && i < totalItems; i++) {
           filteredRows[i].style.display = '';
       }
