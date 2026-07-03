@@ -134,7 +134,10 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
-            <input type="text" id="search-fuelLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา..." onkeyup="changePage('fuelLogTable', 1)">
+            <select id="filter-plate-fuel" class="form-select form-select-sm w-auto" onchange="changePage('fuelLogTable', 1)">
+              <option value="">ทุกทะเบียน</option>
+            </select>
+            <input type="text" id="search-fuelLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา (ช่าง, อะไหล่...)" onkeyup="changePage('fuelLogTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
@@ -172,7 +175,10 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
-            <input type="text" id="search-repairLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา..." onkeyup="changePage('repairLogTable', 1)">
+            <select id="filter-plate-repair" class="form-select form-select-sm w-auto" onchange="changePage('repairLogTable', 1)">
+              <option value="">ทุกทะเบียน</option>
+            </select>
+            <input type="text" id="search-repairLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา (ช่าง, อะไหล่...)" onkeyup="changePage('repairLogTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
@@ -341,7 +347,6 @@
   
   let currentPages = { 'fleetTable': 1, 'fuelLogTable': 1, 'repairLogTable': 1 };
   
-  // ตัวแปรสำหรับ Pagination ใน Modal
   let modalFuelData = [];
   let modalRepairData = [];
   let modalFuelPage = 1;
@@ -394,6 +399,7 @@
     }
   }
 
+  // --- Initializing App ---
   function initApp() {
     let yearSel = document.getElementById('filterYear');
     let currYear = new Date().getFullYear();
@@ -419,6 +425,11 @@
     const plateOptions = '<option value="">เลือกทะเบียน...</option>' + MasterVehicles.map(v => `<option value="${v.plate}">${v.plate}</option>`).join('');
     document.getElementById('fuelPlate').innerHTML = plateOptions;
     document.getElementById('repairPlate').innerHTML = plateOptions;
+
+    // อัปเดต Dropdown ตัวกรอง ในหน้าประวัติทั้งสอง
+    const filterPlateOptions = '<option value="">ทุกทะเบียน</option>' + MasterVehicles.map(v => `<option value="${v.plate}">${v.plate}</option>`).join('');
+    document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
+    document.getElementById('filter-plate-repair').innerHTML = filterPlateOptions;
     
     processData();
   }
@@ -549,6 +560,7 @@
                  <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
                </tr>`;
            }
+
        } else if (log.source === 'repair') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
@@ -563,6 +575,22 @@
     changePage('repairLogTable', 1);
   }
   
+  // ฟังก์ชันตัวกรองแบบใหม่ (รองรับ Dropdown ทะเบียน + ช่องค้นหา)
+  function isRowMatch(row, tableId) {
+      let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
+      let matchSearch = row.innerText.toLowerCase().includes(searchInput);
+      let matchPlate = true;
+      
+      if (tableId === 'fuelLogTable') {
+          let p = document.getElementById('filter-plate-fuel').value;
+          if(p) matchPlate = (row.cells[1].innerText.trim() === p);
+      } else if (tableId === 'repairLogTable') {
+          let p = document.getElementById('filter-plate-repair').value;
+          if(p) matchPlate = (row.cells[1].innerText.trim() === p);
+      }
+      return matchSearch && matchPlate;
+  }
+
   function changePage(tableId, page) {
       currentPages[tableId] = page;
       updateTableView(tableId);
@@ -573,9 +601,10 @@
       let page = currentPages[tableId];
       let tbody = document.getElementById(tableId).querySelector('tbody');
       let rows = Array.from(tbody.querySelectorAll('tr:not(.no-data-row)'));
-      let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
 
-      let filteredRows = rows.filter(row => row.innerText.toLowerCase().includes(searchInput));
+      // ใช้ระบบกรองแบบใหม่ที่เช็คทั้งทะเบียนและ Search Text
+      let filteredRows = rows.filter(row => isRowMatch(row, tableId));
+      
       let totalItems = filteredRows.length;
       let totalPages = limit === -1 ? 1 : Math.ceil(totalItems / limit);
 
@@ -689,7 +718,6 @@
     updatePopStat('popDiffB', sumDiffB);
     document.getElementById('popRepairCost').innerText = repairTotal.toLocaleString() + " บาท";
 
-    // สั่ง Render หน้าแรกของ Modal เสมอเมื่อเปิด
     modalFuelPage = 1;
     modalRepairPage = 1;
     renderModalFuelTable();
@@ -716,7 +744,6 @@
       });
       document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="8" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
 
-      // สร้างปุ่มเปลี่ยนหน้า
       let totalPages = Math.ceil(modalFuelData.length / MODAL_PAGE_SIZE);
       let pgHtml = "";
       if (totalPages > 1) {
@@ -745,7 +772,6 @@
       });
       document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="5" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
 
-      // สร้างปุ่มเปลี่ยนหน้า
       let totalPages = Math.ceil(modalRepairData.length / MODAL_PAGE_SIZE);
       let pgHtml = "";
       if (totalPages > 1) {
@@ -991,13 +1017,12 @@
       
       cloneTable.querySelectorAll('.no-export').forEach(el => el.remove());
 
-      let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
       let tbody = cloneTable.querySelector('tbody');
       if (tbody) {
           Array.from(tbody.rows).forEach(row => {
               if (row.classList.contains('no-data-row')) {
                   row.remove();
-              } else if (searchInput && !row.innerText.toLowerCase().includes(searchInput)) {
+              } else if (!isRowMatch(row, tableId)) { // ใช้ฟังก์ชัน isRowMatch ดึงข้อมูลให้ตรงกับตัวกรอง
                   row.remove();
               } else {
                   row.style.display = ''; 
