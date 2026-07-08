@@ -203,11 +203,12 @@
                   <th class="sortable text-end" onclick="sortTable('repairLogTable', 2, true)">เลขไมล์ <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th>รายการซ่อม</th>
                   <th>ช่าง/อู่</th>
-                  <th class="sortable text-end" onclick="sortTable('repairLogTable', 5, true)">ค่าใช้จ่าย <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="text-center">สถานะ</th>
+                  <th class="sortable text-end" onclick="sortTable('repairLogTable', 6, true)">ค่าใช้จ่าย <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">จัดการ</th>
                 </tr>
               </thead>
-              <tbody id="repairLogTableBody"><tr class="no-data-row"><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+              <tbody id="repairLogTableBody"><tr class="no-data-row"><td colspan="8" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
           <div id="pg-repairLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
@@ -268,7 +269,7 @@
             <div class="bg-white rounded shadow-sm overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-striped mb-0 text-nowrap">
-                  <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">เลขไมล์</th><th style="position: sticky; top:0; background: #f8f9fa;">รายการซ่อม</th><th style="position: sticky; top:0; background: #f8f9fa;">ช่าง/อู่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ค่าใช้จ่าย</th></tr></thead>
+                  <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">เลขไมล์</th><th style="position: sticky; top:0; background: #f8f9fa;">รายการซ่อม</th><th style="position: sticky; top:0; background: #f8f9fa;">ช่าง/อู่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-center">สถานะ</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ค่าใช้จ่าย</th></tr></thead>
                   <tbody id="detailRepairBody"></tbody>
                 </table>
               </div>
@@ -359,7 +360,6 @@
   let modalRepairPage = 1;
   const MODAL_PAGE_SIZE = 15;
 
-  // --- ระบบ Login & Enter Key ---
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') checkLogin();
   });
@@ -385,7 +385,6 @@
     });
   }
 
-  // --- API Wrapper ---
   async function callAPI(payload) {
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -404,7 +403,6 @@
     }
   }
 
-  // --- Initializing App ---
   function initApp() {
     let yearSel = document.getElementById('filterYear');
     let currYear = new Date().getFullYear();
@@ -427,11 +425,11 @@
     MasterVehicles = data.summary || []; 
     RawLogs = data.logs || [];
     
-    const plateOptions = '<option value="">เลือกทะเบียน...</option>' + MasterVehicles.map(v => `<option value="${v.plate}">${v.plate}</option>`).join('');
+    const plateOptions = '<option value="">เลือกทะเบียน...</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('fuelPlate').innerHTML = plateOptions;
     document.getElementById('repairPlate').innerHTML = plateOptions;
 
-    const filterPlateOptions = '<option value="">ทุกทะเบียน</option>' + MasterVehicles.map(v => `<option value="${v.plate}">${v.plate}</option>`).join('');
+    const filterPlateOptions = '<option value="">ทุกทะเบียน</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
     document.getElementById('filter-plate-repair').innerHTML = filterPlateOptions;
     
@@ -443,17 +441,16 @@
     let selMonth = document.getElementById('filterMonth').value;
     
     let vehicleMap = {};
-    MasterVehicles.forEach(v => {
-       vehicleMap[v.plate] = { 
-           ...v, 
+    MasterVehicles.forEach(function(v) {
+       vehicleMap[v.plate] = Object.assign({}, v, {
            totalDist:0, totalLiters:0, 
            totalFuelCost:0, totalRepairCost:0, 
            diffLiters:0, diffBaht:0, 
            washCount:0, lastMile:0, lastOilChange:0, remainDist:0 
-       };
+       });
     });
 
-    RawLogs.forEach(log => {
+    RawLogs.forEach(function(log) {
         if(vehicleMap[log.plate]) {
             let m = Number(String(log.mile).replace(/,/g, '')) || 0;
             if(m > vehicleMap[log.plate].lastMile) vehicleMap[log.plate].lastMile = m;
@@ -463,15 +460,17 @@
         }
     });
 
-    FilteredLogs = RawLogs.filter(log => {
+    FilteredLogs = RawLogs.filter(function(log) {
        if(!log.date) return false;
-       let [y, m, d] = log.date.split('-'); 
+       let parts = log.date.split('-'); 
+       let y = parts[0];
+       let m = parts[1];
        if (y !== selYear) return false;
        if (selMonth !== 'all' && m !== selMonth) return false;
        return true;
     });
 
-    FilteredLogs.forEach(log => {
+    FilteredLogs.forEach(function(log) {
         let v = vehicleMap[log.plate];
         if (v) {
             if (log.type === 'fuel' || log.type === 'wash') {
@@ -491,7 +490,7 @@
     });
 
     let totalFleetDist=0, totalFleetCost=0, totalFleetDiffB=0, totalFleetWash=0;
-    Object.values(vehicleMap).forEach(v => {
+    Object.values(vehicleMap).forEach(function(v) {
         totalFleetDist += v.totalDist; 
         totalFleetCost += (v.totalFuelCost + v.totalRepairCost);
         totalFleetDiffB += v.diffBaht; 
@@ -512,10 +511,9 @@
 
   function renderSummaryTable(vehicleMap) {
     let html = "";
-    Object.values(vehicleMap).forEach(v => {
+    Object.values(vehicleMap).forEach(function(v) {
         let avgRate = v.totalLiters > 0 ? (v.totalDist / v.totalLiters) : 0;
         
-        // 🟡 ปรับเงื่อนไขให้แจ้งเตือนเริ่มที่ 2000 กม. 🟡
         let maintStatus = "";
         if (v.remainDist < 0) {
             maintStatus = `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>`;
@@ -544,12 +542,12 @@
   }
 
   function renderAllLogsTable(logs) {
-    logs.sort((a,b) => b.date.localeCompare(a.date));
+    logs.sort(function(a,b) { return b.date.localeCompare(a.date); });
     
     let fuelHtml = "";
     let repairHtml = "";
 
-    logs.forEach(log => {
+    logs.forEach(function(log) {
        let rawJson = JSON.stringify(log).replace(/"/g, "&quot;");
        
        if (log.source === 'fuel') {
@@ -575,12 +573,32 @@
        } else if (log.source === 'repair') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
-           repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="fw-bold">${log.plate}</td><td class="text-end">${mileText}</td><td>🔧 ${log.detail}</td><td>${mechanic}</td><td class="text-end fw-bold text-danger">${log.cost.toLocaleString()}</td><td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("repair", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('repair', ${log.row})"><i class="fas fa-trash"></i></button></td></tr>`;
+           
+           let badgeClass = "bg-secondary";
+           if(log.status === "เสร็จสิ้น") badgeClass = "bg-success";
+           else if(log.status === "กำลังซ่อม") badgeClass = "bg-primary";
+           else if(log.status === "รออะไหล่") badgeClass = "bg-warning text-dark";
+           
+           let statusBadge = `<span class="badge ${badgeClass}">${log.status}</span>`;
+
+           repairHtml += `<tr>
+               <td>${formatDate(log.date)}</td>
+               <td class="fw-bold">${log.plate}</td>
+               <td class="text-end">${mileText}</td>
+               <td>🔧 ${log.detail}</td>
+               <td>${mechanic}</td>
+               <td class="text-center">${statusBadge}</td>
+               <td class="text-end fw-bold text-danger">${log.cost.toLocaleString()}</td>
+               <td class="text-center no-export">
+                   <button class="btn btn-sm btn-light text-primary" onclick='editItem("repair", ${rawJson})'><i class="fas fa-edit"></i></button>
+                   <button class="btn btn-sm btn-light text-danger" onclick="deleteItem('repair', ${log.row})"><i class="fas fa-trash"></i></button>
+               </td>
+           </tr>`;
        }
     });
 
     document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || `<tr class="no-data-row"><td colspan="11" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
-    document.getElementById('repairLogTableBody').innerHTML = repairHtml || `<tr class="no-data-row"><td colspan="7" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    document.getElementById('repairLogTableBody').innerHTML = repairHtml || `<tr class="no-data-row"><td colspan="8" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     
     changePage('fuelLogTable', 1);
     changePage('repairLogTable', 1);
@@ -613,7 +631,7 @@
       let tbody = document.getElementById(tableId).querySelector('tbody');
       let rows = Array.from(tbody.querySelectorAll('tr:not(.no-data-row)'));
 
-      let filteredRows = rows.filter(row => isRowMatch(row, tableId));
+      let filteredRows = rows.filter(function(row) { return isRowMatch(row, tableId); });
       let totalItems = filteredRows.length;
       let totalPages = limit === -1 ? 1 : Math.ceil(totalItems / limit);
 
@@ -622,7 +640,7 @@
       let start = (page - 1) * limit;
       let end = limit === -1 ? totalItems : start + limit;
 
-      rows.forEach(r => r.style.display = 'none');
+      rows.forEach(function(r) { r.style.display = 'none'; });
       for(let i = start; i < end && i < totalItems; i++) { filteredRows[i].style.display = ''; }
 
       renderPaginationControls(tableId, totalItems, page, totalPages, start, end);
@@ -651,10 +669,10 @@
 
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
-    let currentCar = MasterVehicles.find(v => v.plate === plate);
+    let currentCar = MasterVehicles.find(function(v) { return v.plate === plate; });
     let realLastMile = 0, realLastOilChange = 0;
     
-    RawLogs.forEach(log => {
+    RawLogs.forEach(function(log) {
         if(log.plate === plate) {
             let m = Number(String(log.mile).replace(/,/g, '')) || 0;
             if(m > realLastMile) realLastMile = m;
@@ -677,7 +695,6 @@
     if(elRemain && boxRemain) {
         elRemain.innerText = remainDist.toLocaleString();
         
-        // 🟡 ปรับเงื่อนไขหน้าดีเทลแจ้งเตือนเริ่มที่ 2000 กม. 🟡
         if (remainDist < 0) {
             elRemain.className = "modal-stat-value text-danger";
             boxRemain.className = "modal-stat-box bg-danger bg-opacity-10 border-danger";
@@ -691,15 +708,15 @@
         }
     }
 
-    let logs = FilteredLogs.filter(x => x.plate === plate);
+    let logs = FilteredLogs.filter(function(x) { return x.plate === plate; });
     let sumCount = 0, sumWash = 0, sumLiters = 0, sumCost = 0, sumDiffL = 0, sumDiffB = 0, sumDist = 0, repairTotal = 0;
     
     modalFuelData = [];
     modalRepairData = [];
 
-    logs.sort((a,b) => b.date.localeCompare(a.date));
+    logs.sort(function(a,b) { return b.date.localeCompare(a.date); });
 
-    logs.forEach(log => {
+    logs.forEach(function(log) {
        let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
        if (wHead > 0 || wTail > 0) sumWash += (wHead + wTail);
 
@@ -741,7 +758,7 @@
       let pagedData = modalFuelData.slice(start, end);
       let fuelHtml = "";
 
-      pagedData.forEach(log => {
+      pagedData.forEach(function(log) {
           let badge = log.type === 'fuel' ? '⛽' : '🚿';
           if (log.type === 'fuel') {
                let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
@@ -773,11 +790,17 @@
       let pagedData = modalRepairData.slice(start, end);
       let repairHtml = "";
 
-      pagedData.forEach(log => {
+      pagedData.forEach(function(log) {
           let mechanic = log.mechanic || "-";
-          repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+          let badgeClass = "bg-secondary";
+          if(log.status === "เสร็จสิ้น") badgeClass = "bg-success";
+          else if(log.status === "กำลังซ่อม") badgeClass = "bg-primary";
+          else if(log.status === "รออะไหล่") badgeClass = "bg-warning text-dark";
+          let statusBadge = `<span class="badge ${badgeClass}">${log.status}</span>`;
+
+          repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-center">${statusBadge}</td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString()}</td></tr>`;
       });
-      document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="5" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
+      document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="6" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
 
       let totalPages = Math.ceil(modalRepairData.length / MODAL_PAGE_SIZE);
       let pgHtml = "";
@@ -835,7 +858,7 @@
   document.getElementById('repairItemsContainer').addEventListener('input', function(e) {
       if(e.target.classList.contains('repair-item-cost')) {
           let total = 0;
-          document.querySelectorAll('.repair-item-cost').forEach(input => {
+          document.querySelectorAll('.repair-item-cost').forEach(function(input) {
               total += Number(input.value) || 0;
           });
           document.getElementById('repairTotalCost').innerText = total.toLocaleString();
@@ -851,7 +874,7 @@
     document.getElementById('btnAddRepairRow').style.display = 'inline-block';
     const container = document.getElementById('repairItemsContainer');
     const rows = container.querySelectorAll('.repair-item-row');
-    rows.forEach((row, index) => { if(index > 0) row.remove(); });
+    rows.forEach(function(row, index) { if(index > 0) row.remove(); });
     
     rows[0].querySelector('.repair-select').value = "";
     rows[0].querySelector('.repair-custom').value = "";
@@ -887,7 +910,7 @@
       if(rows.length > 1) {
           btn.parentElement.remove();
           let total = 0;
-          document.querySelectorAll('.repair-item-cost').forEach(input => { total += Number(input.value) || 0; });
+          document.querySelectorAll('.repair-item-cost').forEach(function(input) { total += Number(input.value) || 0; });
           document.getElementById('repairTotalCost').innerText = total.toLocaleString();
       } else {
           Swal.fire('แจ้งเตือน','ต้องมีอย่างน้อย 1 รายการ','warning');
@@ -896,7 +919,7 @@
 
   async function submitRepair() {
     let itemsList = [];
-    document.querySelectorAll('.repair-item-row').forEach(row => {
+    document.querySelectorAll('.repair-item-row').forEach(function(row) {
         let selVal = row.querySelector('.repair-select').value;
         let custVal = row.querySelector('.repair-custom').value;
         let costVal = row.querySelector('.repair-item-cost').value || 0;
@@ -973,7 +996,7 @@
   }
 
   function deleteItem(source, row) {
-    Swal.fire({title:'ยืนยันลบ?', icon:'warning', showCancelButton:true}).then(async r=>{
+    Swal.fire({title:'ยืนยันลบ?', icon:'warning', showCancelButton:true}).then(async function(r) {
        if(r.isConfirmed) {
           document.getElementById('loadingOverlay').style.display = 'flex';
           const actionName = source === 'fuel' ? 'manageFuel' : 'manageRepair';
@@ -983,7 +1006,6 @@
     });
   }
 
-  // --- Utilities & Table Features ---
   function updateStat(id, val, suffix) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + suffix; el.className = val >= 0 ? "fw-bold mb-0 text-success" : "fw-bold mb-0 text-danger"; } }
   function updatePopStat(id, val) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); } }
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
@@ -999,7 +1021,7 @@
 
       if(rows.length === 0) return;
 
-      rows.sort((a, b) => {
+      rows.sort(function(a, b) {
           let valA = a.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0]; 
           let valB = b.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0];
 
@@ -1012,7 +1034,7 @@
           }
       });
       
-      tbody.append(...rows); 
+      rows.forEach(function(row) { tbody.appendChild(row); }); 
       updateTableView(tableId); 
   }
 
@@ -1020,11 +1042,11 @@
       let table = document.getElementById(tableId);
       let cloneTable = table.cloneNode(true);
       
-      cloneTable.querySelectorAll('.no-export').forEach(el => el.remove());
+      cloneTable.querySelectorAll('.no-export').forEach(function(el) { el.remove(); });
 
       let tbody = cloneTable.querySelector('tbody');
       if (tbody) {
-          Array.from(tbody.rows).forEach(row => {
+          Array.from(tbody.rows).forEach(function(row) {
               if (row.classList.contains('no-data-row')) {
                   row.remove();
               } else if (!isRowMatch(row, tableId)) {
@@ -1050,7 +1072,6 @@
       link.click();
   }
 
-  // --- Export รถที่ใกล้ถึงรอบถ่ายน้ำมันเครื่อง (ปรับเป็น 2,000 กม.) ---
   function exportMaintenanceAlert() {
       if(!window.currentVehicleMap) return Swal.fire('แจ้งเตือน', 'กำลังโหลดข้อมูล โปรดรอสักครู่', 'warning');
       
@@ -1069,8 +1090,7 @@
       </tr></thead><tbody>`;
       
       let count = 0;
-      Object.values(window.currentVehicleMap).forEach(v => {
-          // 🟡 ดึงเฉพาะรถที่ติดลบ (เกินกำหนด) หรือ เหลือไม่เกิน 2,000 กม. 🟡
+      Object.values(window.currentVehicleMap).forEach(function(v) {
           if (v.remainDist <= 2000) { 
               count++;
               let statusText = v.remainDist < 0 ? `เกินกำหนด ${Math.abs(v.remainDist).toLocaleString()} กม.` : `เหลือ ${v.remainDist.toLocaleString()} กม.`;
