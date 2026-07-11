@@ -65,6 +65,9 @@
             </select>
          </div>
          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-info text-dark fw-bold shadow-sm rounded-pill px-3" onclick="openDriverModal()">
+              <i class="fas fa-id-card me-1"></i> จัดการคนขับ
+            </button>
             <button class="btn btn-sm btn-success fw-bold shadow-sm rounded-pill px-3" onclick="openFuelModal()">
               <i class="fas fa-gas-pump me-1"></i> น้ำมัน/ล้างรถ
             </button>
@@ -105,7 +108,7 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
-            <input type="text" id="search-fleetTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหาทะเบียน..." onkeyup="changePage('fleetTable', 1)">
+            <input type="text" id="search-fleetTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา (ทะเบียน, คนขับ)..." onkeyup="changePage('fleetTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export</button>
             <button class="btn btn-sm btn-danger text-nowrap" onclick="exportMaintenanceAlert()"><i class="fas fa-bell"></i> รถใกล้ถึงรอบ</button>
           </div>
@@ -117,18 +120,19 @@
                 <tr>
                   <th class="sortable" onclick="sortTable('fleetTable', 0, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-center" onclick="sortTable('fleetTable', 1, false)">ประเภทรถ <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 2, true)">ระยะทาง <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 3, true)">เติมจริง <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fleetTable', 4, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 5, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 6, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fleetTable', 7, true)">ค่าน้ำมัน <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end text-danger" onclick="sortTable('fleetTable', 8, true)">ค่าซ่อม <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fleetTable', 9, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable" onclick="sortTable('fleetTable', 2, false)">คนขับ <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 3, true)">ระยะทาง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 4, true)">เติมจริง <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 5, true)">เรท/STD <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 6, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 7, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fleetTable', 8, true)">ค่าน้ำมัน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end text-danger" onclick="sortTable('fleetTable', 9, true)">ค่าซ่อม <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fleetTable', 10, true)">ล้าง <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">เช็คระยะ</th>
                 </tr>
               </thead>
-              <tbody id="tableBody"><tr class="no-data-row"><td colspan="11" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
+              <tbody id="tableBody"><tr class="no-data-row"><td colspan="12" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
           <div id="pg-fleetTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
@@ -221,6 +225,57 @@
 <div id="loadingOverlay">
   <div class="spinner-border text-primary" role="status"></div>
   <p class="mt-2 text-muted fw-bold">กำลังประมวลผล...</p>
+</div>
+
+<!-- Modal จัดการคนขับ -->
+<div class="modal fade" id="driverModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-info">
+        <h5 class="modal-title text-dark fw-bold"><i class="fas fa-id-card me-2"></i>จัดการคนขับ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="driverForm">
+          <div class="mb-3">
+            <label class="form-label fw-bold">ทะเบียนรถ</label>
+            <select class="form-select" id="driverPlate" required style="width: 100%;" onchange="onDriverPlateChange()">
+              <option value="">เลือกทะเบียน...</option>
+            </select>
+          </div>
+          
+          <div class="bg-light p-3 rounded mb-3 border">
+            <p class="mb-1 text-muted small">สถานะปัจจุบัน:</p>
+            <p class="mb-1">คนขับหลัก: <strong id="lblMainDriver" class="text-dark">-</strong></p>
+            <p class="mb-0">คนขับชั่วคราว: <strong id="lblTempDriver" class="text-primary">-</strong></p>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">เลือกการดำเนินการ</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="driverActionType" id="rdoSetMain" value="setMain" checked onchange="toggleDriverInput()">
+              <label class="form-check-label" for="rdoSetMain">ตั้งค่า / เปลี่ยน คนขับหลัก</label>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="driverActionType" id="rdoSetTemp" value="setTemp" onchange="toggleDriverInput()">
+              <label class="form-check-label" for="rdoSetTemp">กำหนด คนขับชั่วคราว (แทนคนหลัก)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="driverActionType" id="rdoClearTemp" value="clearTemp" onchange="toggleDriverInput()">
+              <label class="form-check-label text-danger" for="rdoClearTemp">ยกเลิก คนขับชั่วคราว (กลับไปใช้คนขับหลัก)</label>
+            </div>
+          </div>
+
+          <div class="mb-3" id="driverInputWrapper">
+            <label class="form-label fw-bold">ชื่อ - นามสกุล คนขับ</label>
+            <input type="text" class="form-control" id="driverNameInput" placeholder="ระบุชื่อคนขับ">
+          </div>
+
+          <button type="button" onclick="submitDriver()" class="btn btn-info w-100 fw-bold shadow-sm">บันทึกคนขับ</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="detailModal" tabindex="-1">
@@ -501,6 +556,7 @@
     const plateOptions = '<option value="">เลือกทะเบียน...</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('fuelPlate').innerHTML = plateOptions;
     document.getElementById('repairPlate').innerHTML = plateOptions;
+    document.getElementById('driverPlate').innerHTML = plateOptions; // เพิ่มสำหรับจัดการคนขับ
 
     const filterPlateOptions = '<option value="">ทุกทะเบียน</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
@@ -511,6 +567,7 @@
     setTimeout(() => {
         $('#fuelPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#fuelModal') });
         $('#repairPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#repairModal') });
+        $('#driverPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#driverModal') });
         $('#filter-plate-fuel').select2({ theme: 'bootstrap-5' });
         $('#filter-plate-repair').select2({ theme: 'bootstrap-5' });
     }, 100);
@@ -602,10 +659,17 @@
         } else {
             maintStatus = `<span class="badge bg-light text-secondary">ปกติ</span>`;
         }
+
+        // จัดการการแสดงผลชื่อคนขับ
+        let driverDisplay = v.mainDriver || "-";
+        if (v.tempDriver) {
+            driverDisplay = `<span class="text-primary fw-bold">${v.tempDriver}</span> <small class="text-muted">(แทน)</small>`;
+        }
                           
         html += `<tr onclick="showDetail('${v.plate}')" style="cursor:pointer">
                     <td class="fw-bold">${v.plate}</td>
                     <td class="text-center">${v.type || '-'}</td>
+                    <td>${driverDisplay}</td>
                     <td class="text-end">${v.totalDist.toLocaleString()}</td>
                     <td class="text-end">${v.totalLiters.toFixed(1)}</td>
                     <td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td>
@@ -617,7 +681,7 @@
                     <td class="text-center no-export">${maintStatus}</td>
                  </tr>`;
     });
-    document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="11" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    document.getElementById('tableBody').innerHTML = html || `<tr class="no-data-row"><td colspan="12" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     changePage('fleetTable', 1);
   }
 
@@ -746,6 +810,69 @@
       }
       pgDiv.innerHTML = html;
   }
+
+  // --- ฟังก์ชันจัดการคนขับรถ ---
+  function openDriverModal() {
+      document.getElementById('driverForm').reset();
+      $('#driverPlate').val('').trigger('change');
+      document.getElementById('lblMainDriver').innerText = "-";
+      document.getElementById('lblTempDriver').innerText = "-";
+      document.getElementById('rdoClearTemp').disabled = true;
+      toggleDriverInput();
+      new bootstrap.Modal(document.getElementById('driverModal')).show();
+  }
+
+  function onDriverPlateChange() {
+      let plate = document.getElementById('driverPlate').value;
+      if (!plate) {
+          document.getElementById('lblMainDriver').innerText = "-";
+          document.getElementById('lblTempDriver').innerText = "-";
+          return;
+      }
+      let v = window.currentVehicleMap[plate];
+      if (v) {
+          document.getElementById('lblMainDriver').innerText = v.mainDriver || "-";
+          document.getElementById('lblTempDriver').innerText = v.tempDriver || "-";
+          
+          if (v.tempDriver) {
+              document.getElementById('rdoClearTemp').disabled = false;
+          } else {
+              document.getElementById('rdoClearTemp').disabled = true;
+              if(document.getElementById('rdoClearTemp').checked) {
+                  document.getElementById('rdoSetMain').checked = true;
+              }
+          }
+          toggleDriverInput();
+      }
+  }
+
+  function toggleDriverInput() {
+      let isClear = document.getElementById('rdoClearTemp').checked;
+      document.getElementById('driverInputWrapper').style.display = isClear ? 'none' : 'block';
+      if(isClear) document.getElementById('driverNameInput').value = "";
+  }
+
+  async function submitDriver() {
+      let plate = document.getElementById('driverPlate').value;
+      let actionType = document.querySelector('input[name="driverActionType"]:checked').value;
+      let driverName = document.getElementById('driverNameInput').value.trim();
+
+      if (!plate) { Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); return; }
+      if (actionType !== 'clearTemp' && !driverName) { Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อคนขับ', 'warning'); return; }
+
+      let data = {
+          action: 'manageDriver',
+          plate: plate,
+          actionType: actionType,
+          driverName: driverName
+      };
+
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      bootstrap.Modal.getInstance(document.getElementById('driverModal')).hide();
+      const res = await callAPI(data);
+      Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
+  }
+  // -------------------------
 
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
