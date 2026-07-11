@@ -336,6 +336,7 @@
   </div>
 </div>
 
+<!-- Modal เติมน้ำมัน (เวอร์ชันอัปเดตช่องบาท/ลิตร และช่องค้นหาคนขับ) -->
 <div class="modal fade" id="fuelModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -354,10 +355,19 @@
           </div>
           <div class="mb-2">
             <label>ทะเบียน</label>
-            <select class="form-select" id="fuelPlate" required style="width: 100%;">
+            <select class="form-select" id="fuelPlate" required style="width: 100%;" onchange="onFuelPlateChange()">
               <option value="">กำลังโหลด...</option>
             </select>
           </div>
+
+          <!-- ช่องเลือก/ระบุชื่อคนขับรถ เพิ่มในหน้าน้ำมัน -->
+          <div class="mb-2">
+            <label class="fw-bold text-secondary">คนขับรถ (หากต้องการเปลี่ยน ให้พิมพ์ระบุใหม่หรือเลือกในรายการ)</label>
+            <select class="form-select" id="fuelDriverSelect" style="width: 100%;">
+              <option value="">ไม่มีคนขับ</option>
+            </select>
+          </div>
+
           <ul class="nav nav-tabs mb-3 mt-3">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabFuel" onclick="setMode('fuel')">เติมน้ำมัน</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabWash" onclick="setMode('wash')">ล้างรถ</a></li>
@@ -367,8 +377,14 @@
               <div class="row g-2">
                 <div class="col-6"><label>เลขไมล์</label><input type="number" class="form-control" id="fuelMile"></div>
                 <div class="col-6"><label>Trip A</label><input type="number" step="0.1" class="form-control" id="fuelTrip"></div>
-                <div class="col-6"><label>ลิตร</label><input type="number" step="0.01" class="form-control" id="fuelLiters"></div>
-                <div class="col-6"><label>รวมเงิน (บาท)</label><input type="number" step="0.01" class="form-control" id="fuelTotal"></div>
+                <div class="col-6"><label>ลิตร</label><input type="number" step="0.01" class="form-control" id="fuelLiters" oninput="calculateRealtimePrice()"></div>
+                <div class="col-6"><label>รวมเงิน (บาท)</label><input type="number" step="0.01" class="form-control" id="fuelTotal" oninput="calculateRealtimePrice()"></div>
+              </div>
+              <div class="mt-2 text-end">
+                <!-- ส่วนแสดงผล บาทต่อลิตร แบบเรียลไทม์ -->
+                <span class="badge bg-light text-dark border py-2 px-3 fw-bold">
+                  ราคาคำนวณได้: <span id="lblCalcPrice" class="text-success">0.00</span> บาท/ลิตร
+                </span>
               </div>
               <div class="mt-2">
                 <label>ชำระเงิน</label>
@@ -472,7 +488,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // 🔴🔴🔴 URL GAS ของคุณ 🔴🔴🔴
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyw0mIjSyoLO_E1RJmsGpBiPNiNVQiotHNcrkgCBg849wjA83Fel4l6VHYSTe0PrIC-/exec';
   
   let MasterVehicles = [];
@@ -556,21 +571,80 @@
     const plateOptions = '<option value="">เลือกทะเบียน...</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('fuelPlate').innerHTML = plateOptions;
     document.getElementById('repairPlate').innerHTML = plateOptions;
-    document.getElementById('driverPlate').innerHTML = plateOptions; // เพิ่มสำหรับจัดการคนขับ
+    document.getElementById('driverPlate').innerHTML = plateOptions;
 
     const filterPlateOptions = '<option value="">ทุกทะเบียน</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
     document.getElementById('filter-plate-repair').innerHTML = filterPlateOptions;
     
+    // สร้างชุดข้อมูลรายชื่อคนขับทั้งหมดในระบบเพื่อนำมาใส่ในหน้าต่างน้ำมัน
+    updateDriverDropdownOptions();
+
     processData();
 
     setTimeout(() => {
         $('#fuelPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#fuelModal') });
+        $('#fuelDriverSelect').select2({ 
+            theme: 'bootstrap-5', 
+            dropdownParent: $('#fuelModal'),
+            tags: true, // ทำให้พิมพ์ข้อความชื่อคนขับใหม่นอกเหนือจากในรายการได้
+            placeholder: "เลือกหรือพิมพ์ระบุชื่อคนขับรถ..."
+        });
         $('#repairPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#repairModal') });
         $('#driverPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#driverModal') });
         $('#filter-plate-fuel').select2({ theme: 'bootstrap-5' });
         $('#filter-plate-repair').select2({ theme: 'bootstrap-5' });
     }, 100);
+  }
+
+  function updateDriverDropdownOptions() {
+      let driverSet = new Set();
+      MasterVehicles.forEach(function(v) {
+          if(v.mainDriver) driverSet.add(v.mainDriver.trim());
+          if(v.tempDriver) driverSet.add(v.tempDriver.trim());
+      });
+      
+      let html = '<option value="">ไม่มีคนขับ</option>';
+      driverSet.forEach(function(name) {
+          if(name) html += `<option value="${name}">${name}</option>`;
+      });
+      document.getElementById('fuelDriverSelect').innerHTML = html;
+  }
+
+  function onFuelPlateChange() {
+      let plate = document.getElementById('fuelPlate').value;
+      if (!plate) {
+          $('#fuelDriverSelect').val('').trigger('change');
+          return;
+      }
+      let v = window.currentVehicleMap[plate];
+      if (v) {
+          // ดึงชื่อคนขับชั่วคราวมาก่อน ถ้าไม่มีให้ใช้คนขับหลัก
+          let currentDriver = v.tempDriver || v.mainDriver || "";
+          if (currentDriver) {
+              // ตรวจสอบว่าใน Select มีตัวเลือกนี้ไหม ถ้าไม่มีให้สร้าง Option ใหม่ก่อน
+              if ($('#fuelDriverSelect').find("option[value='" + currentDriver + "']").length === 0) {
+                  let newOption = new Option(currentDriver, currentDriver, true, true);
+                  $('#fuelDriverSelect').append(newOption).trigger('change');
+              } else {
+                  $('#fuelDriverSelect').val(currentDriver).trigger('change');
+              }
+          } else {
+              $('#fuelDriverSelect').val('').trigger('change');
+          }
+      }
+  }
+
+  function calculateRealtimePrice() {
+      let liters = parseFloat(document.getElementById('fuelLiters').value) || 0;
+      let total = parseFloat(document.getElementById('fuelTotal').value) || 0;
+      let pricePerLiter = 0;
+      
+      if (liters > 0) {
+          pricePerLiter = total / liters;
+      }
+      
+      document.getElementById('lblCalcPrice').innerText = pricePerLiter.toFixed(2);
   }
 
   function processData() {
@@ -660,7 +734,6 @@
             maintStatus = `<span class="badge bg-light text-secondary">ปกติ</span>`;
         }
 
-        // จัดการการแสดงผลชื่อคนขับ
         let driverDisplay = v.mainDriver || "-";
         if (v.tempDriver) {
             driverDisplay = `<span class="text-primary fw-bold">${v.tempDriver}</span> <small class="text-muted">(แทน)</small>`;
@@ -811,7 +884,6 @@
       pgDiv.innerHTML = html;
   }
 
-  // --- ฟังก์ชันจัดการคนขับรถ ---
   function openDriverModal() {
       document.getElementById('driverForm').reset();
       $('#driverPlate').val('').trigger('change');
@@ -872,7 +944,6 @@
       const res = await callAPI(data);
       Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
   }
-  // -------------------------
 
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
@@ -1032,8 +1103,10 @@
   function openFuelModal() {
     document.getElementById('fuelForm').reset();
     $('#fuelPlate').val('').trigger('change');
+    $('#fuelDriverSelect').val('').trigger('change');
     document.getElementById('fuelDate').valueAsDate = new Date();
     document.getElementById('fuelAction').value = 'add';
+    document.getElementById('lblCalcPrice').innerText = "0.00";
     setMode('fuel');
     new bootstrap.Modal(document.getElementById('fuelModal')).show();
   }
@@ -1047,6 +1120,8 @@
     let t = Number(totalVal) || 0;
     
     let pricePerLiter = l > 0 ? (t / l) : 0;
+    let selectedDriver = document.getElementById('fuelDriverSelect').value;
+    let plate = document.getElementById('fuelPlate').value;
 
     let data = {
         action: 'manageFuel',
@@ -1054,7 +1129,7 @@
         row: document.getElementById('fuelRow').value,
         mode: mode,
         date: document.getElementById('fuelDate').value,
-        plate: document.getElementById('fuelPlate').value,
+        plate: plate,
         mile: document.getElementById('fuelMile').value,
         tripA: document.getElementById('fuelTrip').value,
         liters: l,
@@ -1067,7 +1142,25 @@
     
     document.getElementById('loadingOverlay').style.display = 'flex';
     bootstrap.Modal.getInstance(document.getElementById('fuelModal')).hide();
+    
+    // บันทึกค่าน้ำมันก่อน
     const res = await callAPI(data);
+
+    // ตรวจสอบว่าคนขับหน้างานเปลี่ยนไปจากในฐานข้อมูล Master_Vehicle หรือไม่
+    let currentCar = window.currentVehicleMap[plate];
+    let originalDriver = currentCar ? (currentCar.tempDriver || currentCar.mainDriver || "") : "";
+    
+    if (selectedDriver && selectedDriver !== originalDriver) {
+        // หากคนขับเปลี่ยนไป ให้ยิง API ไปอัปเดตช่อง "คนขับชั่วคราว" ใน Master_Vehicle ให้อัตโนมัติ
+        let driverData = {
+            action: 'manageDriver',
+            plate: plate,
+            actionType: currentCar && currentCar.mainDriver ? 'setTemp' : 'setMain', // หากรถคันนั้นยังไม่มีคนขับหลักเลย ให้เลือกเป็นคนขับหลักไปก่อน
+            driverName: selectedDriver
+        };
+        await callAPI(driverData);
+    }
+
     Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
   }
 
@@ -1185,6 +1278,7 @@
            document.getElementById('fuelLiters').value = data.liters;
            document.getElementById('fuelTotal').value = data.cost; 
            document.getElementById('fuelPayment').value = data.payment;
+           calculateRealtimePrice();
         } else {
            setMode('wash');
            if(data.washHead==0.5 && data.washTail==0.5) document.getElementById('washWhole').checked = true;
