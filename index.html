@@ -227,7 +227,6 @@
   <p class="mt-2 text-muted fw-bold">กำลังประมวลผล...</p>
 </div>
 
-<!-- Modal จัดการคนขับ -->
 <div class="modal fade" id="driverModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -336,7 +335,6 @@
   </div>
 </div>
 
-<!-- Modal เติมน้ำมัน (เวอร์ชันอัปเดตช่องบาท/ลิตร และช่องค้นหาคนขับ) -->
 <div class="modal fade" id="fuelModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -359,15 +357,12 @@
               <option value="">กำลังโหลด...</option>
             </select>
           </div>
-
-          <!-- ช่องเลือก/ระบุชื่อคนขับรถ เพิ่มในหน้าน้ำมัน -->
           <div class="mb-2">
             <label class="fw-bold text-secondary">คนขับรถ (หากต้องการเปลี่ยน ให้พิมพ์ระบุใหม่หรือเลือกในรายการ)</label>
             <select class="form-select" id="fuelDriverSelect" style="width: 100%;">
               <option value="">ไม่มีคนขับ</option>
             </select>
           </div>
-
           <ul class="nav nav-tabs mb-3 mt-3">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabFuel" onclick="setMode('fuel')">เติมน้ำมัน</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabWash" onclick="setMode('wash')">ล้างรถ</a></li>
@@ -381,7 +376,6 @@
                 <div class="col-6"><label>รวมเงิน (บาท)</label><input type="number" step="0.01" class="form-control" id="fuelTotal" oninput="calculateRealtimePrice()"></div>
               </div>
               <div class="mt-2 text-end">
-                <!-- ส่วนแสดงผล บาทต่อลิตร แบบเรียลไทม์ -->
                 <span class="badge bg-light text-dark border py-2 px-3 fw-bold">
                   ราคาคำนวณได้: <span id="lblCalcPrice" class="text-success">0.00</span> บาท/ลิตร
                 </span>
@@ -577,7 +571,6 @@
     document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
     document.getElementById('filter-plate-repair').innerHTML = filterPlateOptions;
     
-    // สร้างชุดข้อมูลรายชื่อคนขับทั้งหมดในระบบเพื่อนำมาใส่ในหน้าต่างน้ำมัน
     updateDriverDropdownOptions();
 
     processData();
@@ -587,7 +580,7 @@
         $('#fuelDriverSelect').select2({ 
             theme: 'bootstrap-5', 
             dropdownParent: $('#fuelModal'),
-            tags: true, // ทำให้พิมพ์ข้อความชื่อคนขับใหม่นอกเหนือจากในรายการได้
+            tags: true,
             placeholder: "เลือกหรือพิมพ์ระบุชื่อคนขับรถ..."
         });
         $('#repairPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#repairModal') });
@@ -619,10 +612,8 @@
       }
       let v = window.currentVehicleMap[plate];
       if (v) {
-          // ดึงชื่อคนขับชั่วคราวมาก่อน ถ้าไม่มีให้ใช้คนขับหลัก
           let currentDriver = v.tempDriver || v.mainDriver || "";
           if (currentDriver) {
-              // ตรวจสอบว่าใน Select มีตัวเลือกนี้ไหม ถ้าไม่มีให้สร้าง Option ใหม่ก่อน
               if ($('#fuelDriverSelect').find("option[value='" + currentDriver + "']").length === 0) {
                   let newOption = new Option(currentDriver, currentDriver, true, true);
                   $('#fuelDriverSelect').append(newOption).trigger('change');
@@ -941,8 +932,14 @@
 
       document.getElementById('loadingOverlay').style.display = 'flex';
       bootstrap.Modal.getInstance(document.getElementById('driverModal')).hide();
-      const res = await callAPI(data);
-      Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
+      
+      try {
+          const res = await callAPI(data);
+          document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+          Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
+      } catch (err) {
+          document.getElementById('loadingOverlay').style.display = 'none';
+      }
   }
 
   function showDetail(plate) {
@@ -1143,25 +1140,27 @@
     document.getElementById('loadingOverlay').style.display = 'flex';
     bootstrap.Modal.getInstance(document.getElementById('fuelModal')).hide();
     
-    // บันทึกค่าน้ำมันก่อน
-    const res = await callAPI(data);
+    try {
+        const res = await callAPI(data);
 
-    // ตรวจสอบว่าคนขับหน้างานเปลี่ยนไปจากในฐานข้อมูล Master_Vehicle หรือไม่
-    let currentCar = window.currentVehicleMap[plate];
-    let originalDriver = currentCar ? (currentCar.tempDriver || currentCar.mainDriver || "") : "";
-    
-    if (selectedDriver && selectedDriver !== originalDriver) {
-        // หากคนขับเปลี่ยนไป ให้ยิง API ไปอัปเดตช่อง "คนขับชั่วคราว" ใน Master_Vehicle ให้อัตโนมัติ
-        let driverData = {
-            action: 'manageDriver',
-            plate: plate,
-            actionType: currentCar && currentCar.mainDriver ? 'setTemp' : 'setMain', // หากรถคันนั้นยังไม่มีคนขับหลักเลย ให้เลือกเป็นคนขับหลักไปก่อน
-            driverName: selectedDriver
-        };
-        await callAPI(driverData);
+        let currentCar = window.currentVehicleMap[plate];
+        let originalDriver = currentCar ? (currentCar.tempDriver || currentCar.mainDriver || "") : "";
+        
+        if (selectedDriver && selectedDriver !== originalDriver) {
+            let driverData = {
+                action: 'manageDriver',
+                plate: plate,
+                actionType: currentCar && currentCar.mainDriver ? 'setTemp' : 'setMain',
+                driverName: selectedDriver
+            };
+            await callAPI(driverData);
+        }
+
+        document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+        Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
+    } catch (err) {
+        document.getElementById('loadingOverlay').style.display = 'none';
     }
-
-    Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
   }
 
   document.getElementById('repairItemsContainer').addEventListener('input', function(e) {
@@ -1259,8 +1258,14 @@
 
     document.getElementById('loadingOverlay').style.display = 'flex';
     bootstrap.Modal.getInstance(document.getElementById('repairModal')).hide();
-    const res = await callAPI(data);
-    Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
+    
+    try {
+        const res = await callAPI(data);
+        document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+        Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
+    } catch (err) {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
   }
 
   function editItem(source, data) {
@@ -1311,8 +1316,13 @@
        if(r.isConfirmed) {
           document.getElementById('loadingOverlay').style.display = 'flex';
           const actionName = source === 'fuel' ? 'manageFuel' : 'manageRepair';
-          const res = await callAPI({ action: actionName, subAction: 'delete', row: row });
-          Swal.fire('ลบแล้ว', res.message, 'success').then(()=>loadData()); 
+          try {
+              const res = await callAPI({ action: actionName, subAction: 'delete', row: row });
+              document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+              Swal.fire('ลบแล้ว', res.message, 'success').then(()=>loadData()); 
+          } catch(err) {
+              document.getElementById('loadingOverlay').style.display = 'none';
+          }
        }
     });
   }
