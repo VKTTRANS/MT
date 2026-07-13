@@ -86,10 +86,11 @@
 
   <div class="container-custom">
     <div class="row g-2 mb-3">
-      <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
-      <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
-      <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-info"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-info" id="fleetWash">0</h4></div></div>
-      <div class="col-6 col-md-3"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
+      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
+      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
+      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
+      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-secondary"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-secondary" id="fleetWash">0</h4></div></div>
+      <div class="col-12 col-md flex-fill"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
     </div>
 
     <ul class="nav nav-tabs mb-2" id="mainTab" role="tablist">
@@ -420,7 +421,7 @@
               <input type="date" class="form-control" id="fuelDate" required>
             </div>
             <div class="col-6">
-              <label>เวลา</label>
+              <label>เวลา (24 น.)</label>
               <input type="time" class="form-control" id="fuelTime" required>
             </div>
           </div>
@@ -962,9 +963,10 @@
         }
     });
 
-    let totalFleetDist=0, totalFleetCost=0, totalFleetDiffB=0, totalFleetWash=0;
+    let totalFleetDist=0, totalFleetLiters=0, totalFleetCost=0, totalFleetDiffB=0, totalFleetWash=0;
     Object.values(vehicleMap).forEach(function(v) {
         totalFleetDist += v.totalDist; 
+        totalFleetLiters += v.totalLiters;
         totalFleetCost += (v.totalFuelCost + v.totalRepairCost);
         totalFleetDiffB += v.diffBaht; 
         totalFleetWash += v.washCount; 
@@ -974,6 +976,7 @@
     window.currentVehicleMap = vehicleMap;
 
     document.getElementById('fleetDist').innerText = totalFleetDist.toLocaleString();
+    document.getElementById('fleetLiters').innerText = totalFleetLiters.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
     document.getElementById('fleetCost').innerText = totalFleetCost.toLocaleString();
     document.getElementById('fleetWash').innerText = totalFleetWash.toLocaleString(); 
     updateStat('fleetDiffB', totalFleetDiffB, ' ฿');
