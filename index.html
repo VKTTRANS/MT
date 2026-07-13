@@ -18,9 +18,12 @@
     #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); z-index: 10000; display: flex; align-items: center; justify-content: center; }
     .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
     .container-custom { width: 95%; max-width: 1800px; margin: 0 auto; }
-    .card-stat { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .card-stat h4 { font-size: 1.25rem; }
-    .card-stat small { font-size: 0.8rem; }
+    
+    /* ปรับแต่งกล่องสรุปผลให้เล็กลงและพอดีแถว */
+    .card-stat { background: white; border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .card-stat h4 { font-size: 1.1rem; margin-top: 4px; }
+    .card-stat small { font-size: 0.75rem; }
+    
     .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .table-responsive { max-height: 60vh; overflow-y: auto; }
     .table-responsive thead th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 10; border-bottom: 2px solid #dee2e6; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
@@ -85,12 +88,13 @@
   </nav>
 
   <div class="container-custom">
+    <!-- ปรับ col-lg ให้บังคับเรียง 5 กล่องในแถวเดียวบนหน้าจอ PC -->
     <div class="row g-2 mb-3">
-      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
-      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
-      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
-      <div class="col-6 col-md flex-fill"><div class="card-stat border-start border-4 border-secondary"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-secondary" id="fleetWash">0</h4></div></div>
-      <div class="col-12 col-md flex-fill"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
+      <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
+      <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
+      <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
+      <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-secondary"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-secondary" id="fleetWash">0</h4></div></div>
+      <div class="col-12 col-lg"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
     </div>
 
     <ul class="nav nav-tabs mb-2" id="mainTab" role="tablist">
@@ -224,6 +228,7 @@
   </div>
 </div>
 
+<!-- Modal สำหรับ Preview Export -->
 <div class="modal fade" id="exportPreviewModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
@@ -242,6 +247,7 @@
   </div>
 </div>
 
+<!-- Modal สำหรับ รถใกล้ถึงรอบ -->
 <div class="modal fade" id="maintenanceAlertModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -274,6 +280,7 @@
   </div>
 </div>
 
+<!-- Modal จัดการทะเบียนรถ และคนขับ -->
 <div class="modal fade" id="vehicleManageModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content border-0">
@@ -1152,6 +1159,156 @@
       pgDiv.innerHTML = html;
   }
 
+  function showDetail(plate) {
+    document.getElementById('detailPlate').innerText = plate;
+    let currentCar = MasterVehicles.find(function(v) { return v.plate === plate; });
+    let realLastMile = 0, realLastOilChange = 0;
+    
+    RawLogs.forEach(function(log) {
+        if(log.plate === plate) {
+            let m = Number(String(log.mile).replace(/,/g, '')) || 0;
+            if(m > realLastMile) realLastMile = m;
+            if(log.type === 'repair' && log.detail && log.detail.includes("ถ่ายน้ำมันเครื่อง")) {
+                if(m > realLastOilChange) realLastOilChange = m;
+            }
+        }
+    });
+    
+    let interval = currentCar ? (currentCar.interval || 10000) : 10000;
+    let nextService = realLastOilChange + interval;
+    let remainDist = nextService - realLastMile;
+
+    document.getElementById('popLastMile').innerText = realLastMile.toLocaleString();
+    document.getElementById('popLastOil').innerText = realLastOilChange.toLocaleString();
+    document.getElementById('popNextService').innerText = nextService.toLocaleString();
+    
+    let elRemain = document.getElementById('popRemainDist');
+    let boxRemain = document.getElementById('boxRemainDist');
+    if(elRemain && boxRemain) {
+        elRemain.innerText = remainDist.toLocaleString();
+        
+        if (remainDist < 0) {
+            elRemain.className = "modal-stat-value text-danger";
+            boxRemain.className = "modal-stat-box bg-danger bg-opacity-10 border-danger";
+            elRemain.innerText += " (เกินกำหนด)";
+        } else if (remainDist <= 2000) {
+            elRemain.className = "modal-stat-value text-warning";
+            boxRemain.className = "modal-stat-box bg-warning bg-opacity-10 border-warning";
+        } else {
+            elRemain.className = "modal-stat-value text-success";
+            boxRemain.className = "modal-stat-box border-success";
+        }
+    }
+
+    let logs = FilteredLogs.filter(function(x) { return x.plate === plate; });
+    let sumCount = 0, sumWash = 0, sumLiters = 0, sumCost = 0, sumDiffL = 0, sumDiffB = 0, sumDist = 0, repairTotal = 0;
+    
+    modalFuelData = [];
+    modalRepairData = [];
+
+    logs.sort(function(a,b) { return b.date.localeCompare(a.date); });
+
+    logs.forEach(function(log) {
+       let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
+       if (wHead > 0 || wTail > 0) sumWash += (wHead + wTail);
+
+       if (log.type === 'fuel' || log.type === 'wash') {
+           if (log.type === 'fuel') {
+               sumCount++; sumLiters += log.liters; sumCost += log.cost;
+               sumDiffL += (log.diffLiters || 0); sumDiffB += (log.diffBaht || 0); sumDist += (log.tripA || 0);
+           } else {
+               sumCost += log.cost;
+           }
+           modalFuelData.push(log);
+       } else if (log.type === 'repair') {
+           repairTotal += log.cost;
+           modalRepairData.push(log);
+       }
+    });
+    
+    let avgRate = sumLiters > 0 ? (sumDist / sumLiters) : 0;
+    document.getElementById('popCount').innerText = sumCount;
+    document.getElementById('popWashCount').innerText = parseFloat(sumWash.toFixed(1));
+    document.getElementById('popLiters').innerText = sumLiters.toLocaleString();
+    if(document.getElementById('popCost')) document.getElementById('popCost').innerText = sumCost.toLocaleString();
+    document.getElementById('popRate').innerText = avgRate.toFixed(2);
+    updatePopStat('popDiffL', sumDiffL);
+    updatePopStat('popDiffB', sumDiffB);
+    document.getElementById('popRepairCost').innerText = repairTotal.toLocaleString() + " บาท";
+
+    modalFuelPage = 1;
+    modalRepairPage = 1;
+    renderModalFuelTable();
+    renderModalRepairTable();
+
+    new bootstrap.Modal(document.getElementById('detailModal')).show();
+  }
+
+  function renderModalFuelTable() {
+      let start = (modalFuelPage - 1) * MODAL_PAGE_SIZE;
+      let end = start + MODAL_PAGE_SIZE;
+      let pagedData = modalFuelData.slice(start, end);
+      let fuelHtml = "";
+
+      pagedData.forEach(function(log) {
+          let badge = log.type === 'fuel' ? '⛽' : '🚿';
+          if (log.type === 'fuel') {
+               let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters.toFixed(1)}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${log.diffLiters>=0?'val-pos':'val-neg'}">${formatNum(log.diffLiters)}</td><td class="text-end ${log.diffBaht>=0?'val-pos':'val-neg'}">${formatNum(log.diffBaht)}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+          } else {
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-center">-</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end fw-bold text-muted">${log.cost.toLocaleString()}</td></tr>`;
+          }
+      });
+      document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="9" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
+
+      let totalPages = Math.ceil(modalFuelData.length / MODAL_PAGE_SIZE);
+      let pgHtml = "";
+      if (totalPages > 1) {
+          pgHtml = `<span class="text-muted">แสดง ${start + 1} - ${Math.min(end, modalFuelData.length)} จาก ${modalFuelData.length} รายการ</span>
+                    <div class="btn-group">
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalFuelPage--; renderModalFuelTable()" ${modalFuelPage === 1 ? 'disabled' : ''}>ก่อนหน้า</button>
+                       <button class="btn btn-sm btn-outline-secondary" disabled>หน้า ${modalFuelPage} / ${totalPages}</button>
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalFuelPage++; renderModalFuelTable()" ${modalFuelPage === totalPages ? 'disabled' : ''}>ถัดไป</button>
+                    </div>`;
+      } else if (modalFuelData.length > 0) {
+          pgHtml = `<span class="text-muted">รายการทั้งหมด (${modalFuelData.length})</span>`;
+      }
+      document.getElementById('modalFuelPagination').innerHTML = pgHtml;
+  }
+
+  function renderModalRepairTable() {
+      let start = (modalRepairPage - 1) * MODAL_PAGE_SIZE;
+      let end = start + MODAL_PAGE_SIZE;
+      let pagedData = modalRepairData.slice(start, end);
+      let repairHtml = "";
+
+      pagedData.forEach(function(log) {
+          let mechanic = log.mechanic || "-";
+          let badgeClass = "bg-secondary";
+          if(log.status === "เสร็จสิ้น") badgeClass = "bg-success";
+          else if(log.status === "กำลังซ่อม") badgeClass = "bg-primary";
+          else if(log.status === "รออะไหล่") badgeClass = "bg-warning text-dark";
+          let statusBadge = `<span class="badge ${badgeClass}">${log.status}</span>`;
+
+          repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-center">${statusBadge}</td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+      });
+      document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="6" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
+
+      let totalPages = Math.ceil(modalRepairData.length / MODAL_PAGE_SIZE);
+      let pgHtml = "";
+      if (totalPages > 1) {
+          pgHtml = `<span class="text-muted">แสดง ${start + 1} - ${Math.min(end, modalRepairData.length)} จาก ${modalRepairData.length} รายการ</span>
+                    <div class="btn-group">
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalRepairPage--; renderModalRepairTable()" ${modalRepairPage === 1 ? 'disabled' : ''}>ก่อนหน้า</button>
+                       <button class="btn btn-sm btn-outline-secondary" disabled>หน้า ${modalRepairPage} / ${totalPages}</button>
+                       <button class="btn btn-sm btn-outline-secondary" onclick="modalRepairPage++; renderModalRepairTable()" ${modalRepairPage === totalPages ? 'disabled' : ''}>ถัดไป</button>
+                    </div>`;
+      } else if (modalRepairData.length > 0) {
+          pgHtml = `<span class="text-muted">รายการทั้งหมด (${modalRepairData.length})</span>`;
+      }
+      document.getElementById('modalRepairPagination').innerHTML = pgHtml;
+  }
+  
   function setMode(mode) {
     document.getElementById('fuelMode').value = mode;
     document.getElementById('fuelLiters').required = (mode === 'fuel');
