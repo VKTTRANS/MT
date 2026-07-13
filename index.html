@@ -109,8 +109,8 @@
               <option value="-1">ทั้งหมด</option>
             </select>
             <input type="text" id="search-fleetTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา (ทะเบียน, คนขับ)..." onkeyup="changePage('fleetTable', 1)">
-            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export</button>
-            <button class="btn btn-sm btn-danger text-nowrap" onclick="exportMaintenanceAlert()"><i class="fas fa-bell"></i> รถใกล้ถึงรอบ</button>
+            <button class="btn btn-sm btn-success text-nowrap" onclick="previewExport('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel"></i> Export</button>
+            <button class="btn btn-sm btn-danger text-nowrap" onclick="showMaintenanceAlert()"><i class="fas fa-bell"></i> รถใกล้ถึงรอบ</button>
           </div>
         </div>
         <div class="table-card">
@@ -152,7 +152,7 @@
               <option value="">ทุกทะเบียน</option>
             </select>
             <input type="text" id="search-fuelLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา..." onkeyup="changePage('fuelLogTable', 1)">
-            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export</button>
+            <button class="btn btn-sm btn-success text-nowrap" onclick="previewExport('fuelLogTable', 'Fuel_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
@@ -193,7 +193,7 @@
               <option value="">ทุกทะเบียน</option>
             </select>
             <input type="text" id="search-repairLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา (ช่าง, อะไหล่...)" onkeyup="changePage('repairLogTable', 1)">
-            <button class="btn btn-sm btn-success text-nowrap" onclick="exportExcel('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export</button>
+            <button class="btn btn-sm btn-success text-nowrap" onclick="previewExport('repairLogTable', 'Maintenance_History')"><i class="fas fa-file-excel"></i> Export</button>
           </div>
         </div>
         <div class="table-card">
@@ -222,9 +222,55 @@
   </div>
 </div>
 
-<div id="loadingOverlay">
-  <div class="spinner-border text-primary" role="status"></div>
-  <p class="mt-2 text-muted fw-bold">กำลังประมวลผล...</p>
+<div class="modal fade" id="exportPreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="fas fa-file-excel me-2"></i>ตัวอย่างข้อมูลก่อนส่งออกดาวน์โหลด</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+         <div class="table-responsive" id="exportPreviewBody">
+           </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        <button type="button" class="btn btn-success fw-bold" id="btnConfirmExport"><i class="fas fa-download me-1"></i> ยืนยันดาวน์โหลด Excel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="maintenanceAlertModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="fas fa-bell me-2"></i>รายการรถใกล้ถึงรอบถ่ายน้ำมันเครื่อง (เตือนล่วงหน้า 2,000 กม.)</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+         <div class="table-responsive">
+           <table class="table table-striped table-hover text-nowrap bg-white border">
+              <thead class="table-dark">
+                 <tr>
+                    <th>ทะเบียน</th>
+                    <th>ประเภทรถ</th>
+                    <th class="text-end">เลขไมล์ล่าสุด</th>
+                    <th class="text-end">ระยะถ่ายน้ำมันเครื่อง</th>
+                    <th class="text-center">สถานะ</th>
+                 </tr>
+              </thead>
+              <tbody id="maintenanceAlertBody">
+              </tbody>
+           </table>
+         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        <button type="button" class="btn btn-danger fw-bold" onclick="downloadMaintenanceAlertExcel()"><i class="fas fa-download me-1"></i> ดาวน์โหลด Excel</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="driverModal" tabindex="-1">
@@ -377,14 +423,17 @@
                 </div>
                 <div class="col-6">
                   <label class="fw-bold">Trip A (ส่วนต่างไมล์)</label>
-                  <input type="number" step="0.1" class="form-control" id="fuelTrip">
+                  <input type="number" step="0.1" class="form-control" id="fuelTrip" oninput="calculateRealtimePrice()">
                 </div>
                 <div class="col-6"><label>ลิตร</label><input type="number" step="0.01" class="form-control" id="fuelLiters" oninput="calculateRealtimePrice()"></div>
                 <div class="col-6"><label>รวมเงิน (บาท)</label><input type="number" step="0.01" class="form-control" id="fuelTotal" oninput="calculateRealtimePrice()"></div>
               </div>
               <div class="mt-2 text-end">
+                <span class="badge bg-light text-dark border py-2 px-3 fw-bold me-1">
+                  อัตราสิ้นเปลือง: <span id="lblCalcRate" class="text-primary">0.00</span> กม./ลิตร
+                </span>
                 <span class="badge bg-light text-dark border py-2 px-3 fw-bold">
-                  ราคาคำนวณได้: <span id="lblCalcPrice" class="text-success">0.00</span> บาท/ลิตร
+                  ราคา: <span id="lblCalcPrice" class="text-success">0.00</span> บาท/ลิตร
                 </span>
               </div>
               <div class="mt-2">
@@ -484,6 +533,11 @@
       </div>
     </div>
   </div>
+</div>
+
+<div id="loadingOverlay">
+  <div class="spinner-border text-primary" role="status"></div>
+  <p class="mt-2 text-muted fw-bold">กำลังประมวลผล...</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -638,7 +692,7 @@
           if(currentSelectedLastMile > 0) {
               document.getElementById('hintLastMile').innerText = `ไมล์ล่าสุดที่บันทึก: ${currentSelectedLastMile.toLocaleString()} กม.`;
               if(document.getElementById('fuelAction').value === 'add') {
-                  autoCalcTripA(); // เรียกคำนวณใหม่หากมีการคีย์เลขไมล์ทิ้งไว้แล้วเพิ่งมาเลือกทะเบียน
+                  autoCalcTripA(); 
               }
           } else {
               document.getElementById('hintLastMile').innerText = "";
@@ -646,7 +700,6 @@
       }
   }
 
-  // ฟังก์ชันคำนวณ Trip A โดยเอาไมล์ปัจจุบัน ลบ ไมล์รอบก่อน
   function autoCalcTripA() {
       if(document.getElementById('fuelAction').value !== 'add') return; 
       let currentMile = parseFloat(document.getElementById('fuelMile').value) || 0;
@@ -654,26 +707,35 @@
       if(currentSelectedLastMile > 0 && currentMile > 0) {
           let diff = currentMile - currentSelectedLastMile;
           if (diff >= 0) {
-              // แสดงทศนิยม 1 ตำแหน่ง
               document.getElementById('fuelTrip').value = (Math.round(diff * 10) / 10).toFixed(1);
           } else {
-              document.getElementById('fuelTrip').value = ''; // ถ้าน้อยกว่าไมล์เดิมให้เว้นว่าง
+              document.getElementById('fuelTrip').value = ''; 
           }
       } else {
           document.getElementById('fuelTrip').value = '';
       }
+      calculateRealtimePrice();
   }
 
   function calculateRealtimePrice() {
       let liters = parseFloat(document.getElementById('fuelLiters').value) || 0;
       let total = parseFloat(document.getElementById('fuelTotal').value) || 0;
+      let tripA = parseFloat(document.getElementById('fuelTrip').value) || 0;
+      
       let pricePerLiter = 0;
+      let kmPerLiter = 0;
       
       if (liters > 0) {
           pricePerLiter = total / liters;
+          kmPerLiter = tripA / liters;
       }
       
       document.getElementById('lblCalcPrice').innerText = pricePerLiter.toFixed(2);
+      
+      let lblRate = document.getElementById('lblCalcRate');
+      if(lblRate) {
+          lblRate.innerText = kmPerLiter.toFixed(2);
+      }
   }
 
   function processData() {
@@ -1142,6 +1204,7 @@
     document.getElementById('fuelDate').valueAsDate = new Date();
     document.getElementById('fuelAction').value = 'add';
     document.getElementById('lblCalcPrice').innerText = "0.00";
+    if(document.getElementById('lblCalcRate')) document.getElementById('lblCalcRate').innerText = "0.00";
     document.getElementById('hintLastMile').innerText = ""; 
     currentSelectedLastMile = 0; 
     setMode('fuel');
@@ -1399,18 +1462,17 @@
       updateTableView(tableId); 
   }
 
-  function exportExcel(tableId, filename) {
+  function previewExport(tableId, filename) {
       let table = document.getElementById(tableId);
       let cloneTable = table.cloneNode(true);
       
       cloneTable.querySelectorAll('.no-export').forEach(function(el) { el.remove(); });
+      cloneTable.className = "table table-bordered table-striped mb-0 text-nowrap bg-white";
 
       let tbody = cloneTable.querySelector('tbody');
       if (tbody) {
           Array.from(tbody.rows).forEach(function(row) {
-              if (row.classList.contains('no-data-row')) {
-                  row.remove();
-              } else if (!isRowMatch(row, tableId)) {
+              if (row.classList.contains('no-data-row') || !isRowMatch(row, tableId)) {
                   row.remove();
               } else {
                   row.style.display = ''; 
@@ -1418,6 +1480,17 @@
           });
       }
 
+      document.getElementById('exportPreviewBody').innerHTML = '';
+      document.getElementById('exportPreviewBody').appendChild(cloneTable);
+
+      document.getElementById('btnConfirmExport').onclick = function() {
+          downloadExcel(cloneTable, filename);
+      };
+
+      new bootstrap.Modal(document.getElementById('exportPreviewModal')).show();
+  }
+
+  function downloadExcel(cloneTable, filename) {
       let html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head><meta charset="UTF-8">
@@ -1431,11 +1504,39 @@
       link.href = URL.createObjectURL(blob);
       link.download = filename + '_' + document.getElementById('filterYear').value + '_' + document.getElementById('filterMonth').value + '.xls';
       link.click();
+      bootstrap.Modal.getInstance(document.getElementById('exportPreviewModal')).hide();
   }
 
-  function exportMaintenanceAlert() {
+  function showMaintenanceAlert() {
       if(!window.currentVehicleMap) return Swal.fire('แจ้งเตือน', 'กำลังโหลดข้อมูล โปรดรอสักครู่', 'warning');
       
+      let count = 0;
+      let html = "";
+      Object.values(window.currentVehicleMap).forEach(function(v) {
+          if (v.remainDist <= 2000) { 
+              count++;
+              let statusText = v.remainDist < 0 ? `เกินกำหนด ${Math.abs(v.remainDist).toLocaleString()} กม.` : `เหลือ ${v.remainDist.toLocaleString()} กม.`;
+              let badgeClass = v.remainDist < 0 ? 'bg-danger' : 'bg-warning text-dark'; 
+              
+              html += `<tr>
+                  <td class="fw-bold">${v.plate}</td>
+                  <td>${v.type || '-'}</td>
+                  <td class="text-end font-monospace">${v.lastMile.toLocaleString()}</td>
+                  <td class="text-end font-monospace">${v.interval.toLocaleString()}</td>
+                  <td class="text-center"><span class="badge ${badgeClass}">${statusText}</span></td>
+              </tr>`;
+          }
+      });
+
+      if(count === 0) {
+          return Swal.fire('ยอดเยี่ยม!', 'ไม่มีรถคันไหนใกล้ถึงรอบถ่ายน้ำมันเครื่อง (2,000 กม.) เลยครับ', 'success');
+      }
+
+      document.getElementById('maintenanceAlertBody').innerHTML = html;
+      new bootstrap.Modal(document.getElementById('maintenanceAlertModal')).show();
+  }
+
+  function downloadMaintenanceAlertExcel() {
       let html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head><meta charset="UTF-8"><style>table { border-collapse: collapse; } th, td { border: 1px solid black; padding: 5px; }</style></head>
@@ -1450,10 +1551,8 @@
           <th>สถานะ</th>
       </tr></thead><tbody>`;
       
-      let count = 0;
       Object.values(window.currentVehicleMap).forEach(function(v) {
           if (v.remainDist <= 2000) { 
-              count++;
               let statusText = v.remainDist < 0 ? `เกินกำหนด ${Math.abs(v.remainDist).toLocaleString()} กม.` : `เหลือ ${v.remainDist.toLocaleString()} กม.`;
               let statusColor = v.remainDist < 0 ? '#dc3545' : '#d39e00'; 
               
@@ -1468,10 +1567,6 @@
       });
 
       html += `</tbody></table></body></html>`;
-
-      if(count === 0) {
-          return Swal.fire('ยอดเยี่ยม!', 'ไม่มีรถคันไหนใกล้ถึงรอบถ่ายน้ำมันเครื่อง (2,000 กม.) เลยครับ', 'success');
-      }
       
       let blob = new Blob([html], { type: 'application/vnd.ms-excel' });
       let link = document.createElement('a');
@@ -1480,6 +1575,7 @@
       let dateStr = `${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2, '0')}${d.getDate().toString().padStart(2, '0')}`;
       link.download = `แจ้งเตือนเข้าซ่อมบำรุง_${dateStr}.xls`;
       link.click();
+      bootstrap.Modal.getInstance(document.getElementById('maintenanceAlertModal')).hide();
   }
 </script>
 </body>
