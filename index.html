@@ -370,8 +370,15 @@
           <div class="tab-content">
             <div class="tab-pane fade show active" id="tabFuel">
               <div class="row g-2">
-                <div class="col-6"><label>เลขไมล์</label><input type="number" class="form-control" id="fuelMile"></div>
-                <div class="col-6"><label>Trip A</label><input type="number" step="0.1" class="form-control" id="fuelTrip"></div>
+                <div class="col-6">
+                  <label class="fw-bold">เลขไมล์รวม (ปัจจุบัน)</label>
+                  <input type="number" class="form-control border-primary" id="fuelMile" oninput="autoCalcTripA()">
+                  <small id="hintLastMile" class="text-primary fw-bold" style="font-size: 0.75rem;"></small>
+                </div>
+                <div class="col-6">
+                  <label class="fw-bold">Trip A (ส่วนต่างไมล์)</label>
+                  <input type="number" step="0.1" class="form-control" id="fuelTrip">
+                </div>
                 <div class="col-6"><label>ลิตร</label><input type="number" step="0.01" class="form-control" id="fuelLiters" oninput="calculateRealtimePrice()"></div>
                 <div class="col-6"><label>รวมเงิน (บาท)</label><input type="number" step="0.01" class="form-control" id="fuelTotal" oninput="calculateRealtimePrice()"></div>
               </div>
@@ -488,6 +495,7 @@
   let RawLogs = []; 
   let FilteredLogs = []; 
   let sortDirection = {}; 
+  let currentSelectedLastMile = 0;
   
   let currentPages = { 'fleetTable': 1, 'fuelLogTable': 1, 'repairLogTable': 1 };
   
@@ -608,6 +616,8 @@
       let plate = document.getElementById('fuelPlate').value;
       if (!plate) {
           $('#fuelDriverSelect').val('').trigger('change');
+          currentSelectedLastMile = 0;
+          document.getElementById('hintLastMile').innerText = "";
           return;
       }
       let v = window.currentVehicleMap[plate];
@@ -623,6 +633,34 @@
           } else {
               $('#fuelDriverSelect').val('').trigger('change');
           }
+          
+          currentSelectedLastMile = v.lastMile || 0;
+          if(currentSelectedLastMile > 0) {
+              document.getElementById('hintLastMile').innerText = `ไมล์ล่าสุดที่บันทึก: ${currentSelectedLastMile.toLocaleString()} กม.`;
+              if(document.getElementById('fuelAction').value === 'add') {
+                  autoCalcTripA(); // เรียกคำนวณใหม่หากมีการคีย์เลขไมล์ทิ้งไว้แล้วเพิ่งมาเลือกทะเบียน
+              }
+          } else {
+              document.getElementById('hintLastMile').innerText = "";
+          }
+      }
+  }
+
+  // ฟังก์ชันคำนวณ Trip A โดยเอาไมล์ปัจจุบัน ลบ ไมล์รอบก่อน
+  function autoCalcTripA() {
+      if(document.getElementById('fuelAction').value !== 'add') return; 
+      let currentMile = parseFloat(document.getElementById('fuelMile').value) || 0;
+      
+      if(currentSelectedLastMile > 0 && currentMile > 0) {
+          let diff = currentMile - currentSelectedLastMile;
+          if (diff >= 0) {
+              // แสดงทศนิยม 1 ตำแหน่ง
+              document.getElementById('fuelTrip').value = (Math.round(diff * 10) / 10).toFixed(1);
+          } else {
+              document.getElementById('fuelTrip').value = ''; // ถ้าน้อยกว่าไมล์เดิมให้เว้นว่าง
+          }
+      } else {
+          document.getElementById('fuelTrip').value = '';
       }
   }
 
@@ -935,7 +973,7 @@
       
       try {
           const res = await callAPI(data);
-          document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+          document.getElementById('loadingOverlay').style.display = 'none';
           Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
       } catch (err) {
           document.getElementById('loadingOverlay').style.display = 'none';
@@ -1104,6 +1142,8 @@
     document.getElementById('fuelDate').valueAsDate = new Date();
     document.getElementById('fuelAction').value = 'add';
     document.getElementById('lblCalcPrice').innerText = "0.00";
+    document.getElementById('hintLastMile').innerText = ""; 
+    currentSelectedLastMile = 0; 
     setMode('fuel');
     new bootstrap.Modal(document.getElementById('fuelModal')).show();
   }
@@ -1156,7 +1196,7 @@
             await callAPI(driverData);
         }
 
-        document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+        document.getElementById('loadingOverlay').style.display = 'none';
         Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
     } catch (err) {
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -1261,7 +1301,7 @@
     
     try {
         const res = await callAPI(data);
-        document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+        document.getElementById('loadingOverlay').style.display = 'none'; 
         Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
     } catch (err) {
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -1318,7 +1358,7 @@
           const actionName = source === 'fuel' ? 'manageFuel' : 'manageRepair';
           try {
               const res = await callAPI({ action: actionName, subAction: 'delete', row: row });
-              document.getElementById('loadingOverlay').style.display = 'none'; // <-- 🔴 ปิดหน้าจอโหลดก่อนแสดงแจ้งเตือน
+              document.getElementById('loadingOverlay').style.display = 'none'; 
               Swal.fire('ลบแล้ว', res.message, 'success').then(()=>loadData()); 
           } catch(err) {
               document.getElementById('loadingOverlay').style.display = 'none';
