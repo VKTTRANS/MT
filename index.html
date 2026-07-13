@@ -65,8 +65,9 @@
             </select>
          </div>
          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-info text-dark fw-bold shadow-sm rounded-pill px-3" onclick="openDriverModal()">
-              <i class="fas fa-id-card me-1"></i> จัดการคนขับ
+            <!-- เปลี่ยนปุ่มจัดการคนขับ เป็นปุ่มจัดการรถ/คนขับ -->
+            <button class="btn btn-sm btn-info text-dark fw-bold shadow-sm rounded-pill px-3" onclick="openVehicleManageModal()">
+              <i class="fas fa-truck-moving me-1"></i> จัดการรถ/คนขับ
             </button>
             <button class="btn btn-sm btn-success fw-bold shadow-sm rounded-pill px-3" onclick="openFuelModal()">
               <i class="fas fa-gas-pump me-1"></i> น้ำมัน/ล้างรถ
@@ -222,6 +223,7 @@
   </div>
 </div>
 
+<!-- Modal สำหรับ Preview Export -->
 <div class="modal fade" id="exportPreviewModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
@@ -230,8 +232,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body bg-light">
-         <div class="table-responsive" id="exportPreviewBody">
-           </div>
+         <div class="table-responsive" id="exportPreviewBody"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
@@ -241,6 +242,7 @@
   </div>
 </div>
 
+<!-- Modal สำหรับ รถใกล้ถึงรอบ -->
 <div class="modal fade" id="maintenanceAlertModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -260,8 +262,7 @@
                     <th class="text-center">สถานะ</th>
                  </tr>
               </thead>
-              <tbody id="maintenanceAlertBody">
-              </tbody>
+              <tbody id="maintenanceAlertBody"></tbody>
            </table>
          </div>
       </div>
@@ -273,51 +274,77 @@
   </div>
 </div>
 
-<div class="modal fade" id="driverModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-info">
-        <h5 class="modal-title text-dark fw-bold"><i class="fas fa-id-card me-2"></i>จัดการคนขับ</h5>
+<!-- Modal ใหม่: จัดการทะเบียนรถ และคนขับ -->
+<div class="modal fade" id="vehicleManageModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content border-0">
+      <div class="modal-header bg-info text-dark">
+        <h5 class="modal-title fw-bold"><i class="fas fa-truck-moving me-2"></i>จัดการทะเบียนรถ และคนขับ</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <form id="driverForm">
-          <div class="mb-3">
-            <label class="form-label fw-bold">ทะเบียนรถ</label>
-            <select class="form-select" id="driverPlate" required style="width: 100%;" onchange="onDriverPlateChange()">
-              <option value="">เลือกทะเบียน...</option>
-            </select>
-          </div>
-          
-          <div class="bg-light p-3 rounded mb-3 border">
-            <p class="mb-1 text-muted small">สถานะปัจจุบัน:</p>
-            <p class="mb-1">คนขับหลัก: <strong id="lblMainDriver" class="text-dark">-</strong></p>
-            <p class="mb-0">คนขับชั่วคราว: <strong id="lblTempDriver" class="text-primary">-</strong></p>
-          </div>
+      <div class="modal-body bg-light">
+        
+        <!-- ส่วนรายการรถ -->
+        <div id="vehicleListSection">
+           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <input type="text" id="searchVehicleInput" class="form-control" style="max-width: 300px;" placeholder="🔍 ค้นหาทะเบียนรถ หรือคนขับ..." onkeyup="renderVehicleList()">
+              <button class="btn btn-primary fw-bold" onclick="openVehicleForm('add')"><i class="fas fa-plus"></i> เพิ่มรถใหม่</button>
+           </div>
+           <div class="table-responsive bg-white rounded shadow-sm border">
+              <table class="table table-hover align-middle text-nowrap mb-0">
+                 <thead class="table-dark">
+                    <tr>
+                       <th>ทะเบียน</th>
+                       <th>ประเภท</th>
+                       <th>ข้อมูลคนขับรถ</th>
+                       <th class="text-center">เรท กม./ลิตร</th>
+                       <th class="text-center">เช็คระยะ (กม.)</th>
+                       <th class="text-center">จัดการ</th>
+                    </tr>
+                 </thead>
+                 <tbody id="vehicleListBody"></tbody>
+              </table>
+           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold">เลือกการดำเนินการ</label>
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="driverActionType" id="rdoSetMain" value="setMain" checked onchange="toggleDriverInput()">
-              <label class="form-check-label" for="rdoSetMain">ตั้งค่า / เปลี่ยน คนขับหลัก</label>
-            </div>
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="driverActionType" id="rdoSetTemp" value="setTemp" onchange="toggleDriverInput()">
-              <label class="form-check-label" for="rdoSetTemp">กำหนด คนขับชั่วคราว (แทนคนหลัก)</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="driverActionType" id="rdoClearTemp" value="clearTemp" onchange="toggleDriverInput()">
-              <label class="form-check-label text-danger" for="rdoClearTemp">ยกเลิก คนขับชั่วคราว (กลับไปใช้คนขับหลัก)</label>
-            </div>
-          </div>
+        <!-- ส่วนฟอร์มเพิ่ม/แก้ไข -->
+        <div id="vehicleFormSection" style="display: none;">
+           <div class="card shadow-sm border-0">
+              <div class="card-body p-4">
+                 <h5 class="fw-bold mb-4 text-primary border-bottom pb-2" id="vFormTitle">เพิ่มข้อมูลรถ</h5>
+                 <input type="hidden" id="vFormAction">
+                 <input type="hidden" id="vFormOldPlate">
+                 
+                 <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                       <label class="form-label fw-bold">ทะเบียนรถ</label>
+                       <input type="text" class="form-control" id="vFormPlate" placeholder="เช่น 70-8734">
+                    </div>
+                    <div class="col-md-6">
+                       <label class="form-label fw-bold">ประเภทรถ</label>
+                       <input type="text" class="form-control" id="vFormType" placeholder="เช่น รถกระบะ, รถบรรทุก">
+                    </div>
+                    <div class="col-md-6">
+                       <label class="form-label fw-bold">คนขับหลัก</label>
+                       <input type="text" class="form-control" id="vFormDriver" placeholder="ชื่อ-สกุล คนขับหลัก">
+                    </div>
+                    <div class="col-md-3">
+                       <label class="form-label fw-bold">เรทมาตรฐาน (กม./ลิตร)</label>
+                       <input type="number" step="0.1" class="form-control" id="vFormRate" placeholder="เช่น 10.5">
+                    </div>
+                    <div class="col-md-3">
+                       <label class="form-label fw-bold">ระยะเช็คระยะ (กม.)</label>
+                       <input type="number" class="form-control" id="vFormInterval" placeholder="เช่น 10000">
+                    </div>
+                 </div>
+                 <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button class="btn btn-secondary px-4" onclick="closeVehicleForm()">ย้อนกลับ</button>
+                    <button class="btn btn-success px-4 fw-bold" onclick="submitVehicle()"><i class="fas fa-save me-1"></i> บันทึกข้อมูล</button>
+                 </div>
+              </div>
+           </div>
+        </div>
 
-          <div class="mb-3" id="driverInputWrapper">
-            <label class="form-label fw-bold">ชื่อ - นามสกุล คนขับ</label>
-            <input type="text" class="form-control" id="driverNameInput" placeholder="ระบุชื่อคนขับ">
-          </div>
-
-          <button type="button" onclick="submitDriver()" class="btn btn-info w-100 fw-bold shadow-sm">บันทึกคนขับ</button>
-        </form>
       </div>
     </div>
   </div>
@@ -627,15 +654,17 @@
     const plateOptions = '<option value="">เลือกทะเบียน...</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('fuelPlate').innerHTML = plateOptions;
     document.getElementById('repairPlate').innerHTML = plateOptions;
-    document.getElementById('driverPlate').innerHTML = plateOptions;
 
     const filterPlateOptions = '<option value="">ทุกทะเบียน</option>' + MasterVehicles.map(function(v) { return `<option value="${v.plate}">${v.plate}</option>` }).join('');
     document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
     document.getElementById('filter-plate-repair').innerHTML = filterPlateOptions;
     
     updateDriverDropdownOptions();
-
     processData();
+
+    if(document.getElementById('vehicleManageModal').classList.contains('show')) {
+        renderVehicleList();
+    }
 
     setTimeout(() => {
         $('#fuelPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#fuelModal') });
@@ -646,7 +675,6 @@
             placeholder: "เลือกหรือพิมพ์ระบุชื่อคนขับรถ..."
         });
         $('#repairPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#repairModal') });
-        $('#driverPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#driverModal') });
         $('#filter-plate-fuel').select2({ theme: 'bootstrap-5' });
         $('#filter-plate-repair').select2({ theme: 'bootstrap-5' });
     }, 100);
@@ -665,6 +693,151 @@
       });
       document.getElementById('fuelDriverSelect').innerHTML = html;
   }
+
+  // --- ฟังก์ชันจัดการรถ/คนขับ (เมนูใหม่) --- //
+  function openVehicleManageModal() {
+      renderVehicleList();
+      document.getElementById('vehicleListSection').style.display = 'block';
+      document.getElementById('vehicleFormSection').style.display = 'none';
+      new bootstrap.Modal(document.getElementById('vehicleManageModal')).show();
+  }
+
+  function renderVehicleList() {
+      let keyword = document.getElementById('searchVehicleInput').value.toLowerCase();
+      let html = '';
+      
+      MasterVehicles.forEach(v => {
+          if (v.plate.toLowerCase().includes(keyword) || (v.mainDriver && v.mainDriver.toLowerCase().includes(keyword)) || (v.tempDriver && v.tempDriver.toLowerCase().includes(keyword))) {
+              
+              let driverDisplay = v.mainDriver || `<span class="text-muted fst-italic">ไม่ได้ระบุ</span>`;
+              if (v.tempDriver) {
+                  driverDisplay = `<div><span class="text-primary fw-bold">${v.tempDriver}</span> <small class="text-muted">(คนขับแทน)</small>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-1 ms-1" style="font-size:0.75rem;" onclick="clearTempDriver('${v.plate}')" title="ยกเลิกคนขับแทน (กลับไปใช้คนขับหลัก)"><i class="fas fa-times"></i></button></div>
+                  <div class="small text-muted mt-1">คนขับหลักเดิม: ${v.mainDriver || "-"}</div>`;
+              }
+
+              html += `<tr>
+                  <td class="fw-bold">${v.plate}</td>
+                  <td>${v.type || '-'}</td>
+                  <td>${driverDisplay}</td>
+                  <td class="text-center text-primary fw-bold">${v.rateStd}</td>
+                  <td class="text-center font-monospace">${v.interval.toLocaleString()}</td>
+                  <td class="text-center">
+                      <button class="btn btn-sm btn-light text-primary border" onclick="openVehicleForm('edit', '${v.plate}')" title="แก้ไขข้อมูล"><i class="fas fa-edit"></i></button>
+                      <button class="btn btn-sm btn-light text-danger border ms-1" onclick="deleteVehicle('${v.plate}')" title="ลบข้อมูลรถ"><i class="fas fa-trash"></i></button>
+                  </td>
+              </tr>`;
+          }
+      });
+      document.getElementById('vehicleListBody').innerHTML = html || '<tr><td colspan="6" class="text-center text-muted py-4">ไม่พบข้อมูล หรือยังไม่มีรถในระบบ</td></tr>';
+  }
+
+  function openVehicleForm(action, plate = '') {
+      document.getElementById('vFormAction').value = action;
+      document.getElementById('vFormOldPlate').value = plate;
+      
+      if(action === 'edit') {
+          document.getElementById('vFormTitle').innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลรถ';
+          let v = MasterVehicles.find(x => x.plate === plate);
+          if(v) {
+              document.getElementById('vFormPlate').value = v.plate;
+              document.getElementById('vFormType').value = v.type || "";
+              document.getElementById('vFormDriver').value = v.mainDriver || "";
+              document.getElementById('vFormRate').value = v.rateStd || 0;
+              document.getElementById('vFormInterval').value = v.interval || 10000;
+          }
+      } else {
+          document.getElementById('vFormTitle').innerHTML = '<i class="fas fa-plus-circle me-2"></i>เพิ่มข้อมูลรถใหม่';
+          document.getElementById('vFormPlate').value = "";
+          document.getElementById('vFormType').value = "รถกระบะ";
+          document.getElementById('vFormDriver').value = "";
+          document.getElementById('vFormRate').value = "";
+          document.getElementById('vFormInterval').value = 10000;
+      }
+
+      document.getElementById('vehicleListSection').style.display = 'none';
+      document.getElementById('vehicleFormSection').style.display = 'block';
+  }
+
+  function closeVehicleForm() {
+      document.getElementById('vehicleFormSection').style.display = 'none';
+      document.getElementById('vehicleListSection').style.display = 'block';
+  }
+
+  async function submitVehicle() {
+      let action = document.getElementById('vFormAction').value;
+      let oldPlate = document.getElementById('vFormOldPlate').value;
+      let plate = document.getElementById('vFormPlate').value.trim();
+      let type = document.getElementById('vFormType').value.trim();
+      let mainDriver = document.getElementById('vFormDriver').value.trim();
+      let rateStd = Number(document.getElementById('vFormRate').value) || 0;
+      let interval = Number(document.getElementById('vFormInterval').value) || 10000;
+
+      if(!plate) { Swal.fire('แจ้งเตือน', 'กรุณาระบุทะเบียนรถให้ครบถ้วน', 'warning'); return; }
+
+      let data = {
+          action: 'manageVehicle',
+          subAction: action,
+          oldPlate: oldPlate,
+          plate: plate,
+          type: type,
+          mainDriver: mainDriver,
+          rateStd: rateStd,
+          interval: interval
+      };
+
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      try {
+          const res = await callAPI(data);
+          document.getElementById('loadingOverlay').style.display = 'none';
+          if(res.message.includes('❌')) {
+              Swal.fire('ข้อผิดพลาด', res.message, 'error');
+          } else {
+              Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500});
+              closeVehicleForm();
+              loadData(); 
+          }
+      } catch (err) {
+          document.getElementById('loadingOverlay').style.display = 'none';
+      }
+  }
+
+  function deleteVehicle(plate) {
+      Swal.fire({title:'ยืนยันลบรถ?', html:`คุณต้องการลบรถทะเบียน <b>${plate}</b> ออกจากระบบใช่หรือไม่?<br><small class="text-danger">การกระทำนี้ไม่สามารถย้อนกลับได้</small>`, icon:'warning', showCancelButton:true, confirmButtonColor: '#dc3545'}).then(async function(r) {
+         if(r.isConfirmed) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            try {
+                const res = await callAPI({ action: 'manageVehicle', subAction: 'delete', plate: plate });
+                document.getElementById('loadingOverlay').style.display = 'none'; 
+                if(res.message.includes('❌')) {
+                    Swal.fire('ข้อผิดพลาด', res.message, 'error');
+                } else {
+                    Swal.fire({icon: 'success', title: 'ลบข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500});
+                    loadData(); 
+                }
+            } catch(err) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+         }
+      });
+  }
+
+  async function clearTempDriver(plate) {
+      Swal.fire({title:'ยกเลิกคนขับแทน?', text:'ระบบจะกลับไปใช้รายชื่อคนขับหลัก', icon:'question', showCancelButton:true}).then(async function(r) {
+         if(r.isConfirmed) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            try {
+                const res = await callAPI({ action: 'manageDriver', actionType: 'clearTemp', plate: plate });
+                document.getElementById('loadingOverlay').style.display = 'none'; 
+                Swal.fire({icon: 'success', title: 'ยกเลิกคนขับแทนเรียบร้อย', showConfirmButton: false, timer: 1500});
+                loadData(); 
+            } catch(err) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+         }
+      });
+  }
+  // ------------------------------------------ //
 
   function onFuelPlateChange() {
       let plate = document.getElementById('fuelPlate').value;
@@ -973,73 +1146,6 @@
                    </div>`;
       }
       pgDiv.innerHTML = html;
-  }
-
-  function openDriverModal() {
-      document.getElementById('driverForm').reset();
-      $('#driverPlate').val('').trigger('change');
-      document.getElementById('lblMainDriver').innerText = "-";
-      document.getElementById('lblTempDriver').innerText = "-";
-      document.getElementById('rdoClearTemp').disabled = true;
-      toggleDriverInput();
-      new bootstrap.Modal(document.getElementById('driverModal')).show();
-  }
-
-  function onDriverPlateChange() {
-      let plate = document.getElementById('driverPlate').value;
-      if (!plate) {
-          document.getElementById('lblMainDriver').innerText = "-";
-          document.getElementById('lblTempDriver').innerText = "-";
-          return;
-      }
-      let v = window.currentVehicleMap[plate];
-      if (v) {
-          document.getElementById('lblMainDriver').innerText = v.mainDriver || "-";
-          document.getElementById('lblTempDriver').innerText = v.tempDriver || "-";
-          
-          if (v.tempDriver) {
-              document.getElementById('rdoClearTemp').disabled = false;
-          } else {
-              document.getElementById('rdoClearTemp').disabled = true;
-              if(document.getElementById('rdoClearTemp').checked) {
-                  document.getElementById('rdoSetMain').checked = true;
-              }
-          }
-          toggleDriverInput();
-      }
-  }
-
-  function toggleDriverInput() {
-      let isClear = document.getElementById('rdoClearTemp').checked;
-      document.getElementById('driverInputWrapper').style.display = isClear ? 'none' : 'block';
-      if(isClear) document.getElementById('driverNameInput').value = "";
-  }
-
-  async function submitDriver() {
-      let plate = document.getElementById('driverPlate').value;
-      let actionType = document.querySelector('input[name="driverActionType"]:checked').value;
-      let driverName = document.getElementById('driverNameInput').value.trim();
-
-      if (!plate) { Swal.fire('แจ้งเตือน', 'กรุณาเลือกทะเบียนรถ', 'warning'); return; }
-      if (actionType !== 'clearTemp' && !driverName) { Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อคนขับ', 'warning'); return; }
-
-      let data = {
-          action: 'manageDriver',
-          plate: plate,
-          actionType: actionType,
-          driverName: driverName
-      };
-
-      document.getElementById('loadingOverlay').style.display = 'flex';
-      bootstrap.Modal.getInstance(document.getElementById('driverModal')).hide();
-      
-      try {
-          const res = await callAPI(data);
-          document.getElementById('loadingOverlay').style.display = 'none';
-          Swal.fire({icon: 'success', title: res.message, showConfirmButton: false, timer: 1500}).then(() => loadData());
-      } catch (err) {
-          document.getElementById('loadingOverlay').style.display = 'none';
-      }
   }
 
   function showDetail(plate) {
