@@ -1572,7 +1572,7 @@
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
   function formatDate(d) { return d ? d.split('-').reverse().join('/') : ''; }
   
-  function sortTable(tableId, colIndex, isNumeric) {
+ function sortTable(tableId, colIndex, isNumeric) {
       if (sortDirection[tableId] === undefined) sortDirection[tableId] = true;
       else sortDirection[tableId] = !sortDirection[tableId];
 
@@ -1583,8 +1583,31 @@
       if(rows.length === 0) return;
 
       rows.sort(function(a, b) {
-          let valA = a.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0]; 
-          let valB = b.cells[colIndex].innerText.trim().replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(' ')[0];
+          // ดึงข้อความใน Cell ออกมา
+          let rawA = a.cells[colIndex].innerText.trim();
+          let rawB = b.cells[colIndex].innerText.trim();
+
+          // 1. เช็คว่าคอลัมน์นี้เป็นวันที่หรือไม่ (ตรวจจับรูปแบบ DD/MM/YYYY)
+          let dateRegex = /(\d{2})\/(\d{2})\/(\d{4})/;
+          if (dateRegex.test(rawA) && dateRegex.test(rawB)) {
+              // ฟังก์ชันย่อยสำหรับแปลง DD/MM/YYYY และเวลา ให้เป็น YYYYMMDDHHMM เพื่อเรียงลำดับ
+              let parseDate = (str) => {
+                  let dMatch = str.match(dateRegex);
+                  let tMatch = str.match(/(\d{2}):(\d{2})/); // หาเวลา HH:MM
+                  
+                  let dPart = dMatch ? dMatch[3] + dMatch[2] + dMatch[1] : ""; // ปี+เดือน+วัน
+                  let tPart = tMatch ? tMatch[1] + tMatch[2] : "0000";         // ชั่วโมง+นาที
+                  return dPart + tPart;
+              };
+              
+              let dateA = parseDate(rawA);
+              let dateB = parseDate(rawB);
+              return sortDirection[tableId] ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA);
+          }
+
+          // 2. ถ้าไม่ใช่คอลัมน์วันที่ ให้ประมวลผลลบพวกสัญลักษณ์ต่างๆ ออกเหมือนเดิม
+          let valA = rawA.replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(/[\n ]/)[0]; 
+          let valB = rawB.replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(/[\n ]/)[0];
 
           if (isNumeric) {
               let numA = parseFloat(valA) || 0;
