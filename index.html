@@ -19,7 +19,6 @@
     .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
     .container-custom { width: 95%; max-width: 1800px; margin: 0 auto; }
     
-    /* ปรับแต่งกล่องสรุปผลให้เล็กลงและพอดีแถว */
     .card-stat { background: white; border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .card-stat h4 { font-size: 1.1rem; margin-top: 4px; }
     .card-stat small { font-size: 0.75rem; }
@@ -88,7 +87,6 @@
   </nav>
 
   <div class="container-custom">
-    <!-- ปรับ col-lg ให้บังคับเรียง 5 กล่องในแถวเดียวบนหน้าจอ PC -->
     <div class="row g-2 mb-3">
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
@@ -223,12 +221,10 @@
           <div id="pg-repairLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- Modal สำหรับ Preview Export -->
 <div class="modal fade" id="exportPreviewModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
@@ -247,7 +243,6 @@
   </div>
 </div>
 
-<!-- Modal สำหรับ รถใกล้ถึงรอบ -->
 <div class="modal fade" id="maintenanceAlertModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -280,7 +275,6 @@
   </div>
 </div>
 
-<!-- Modal จัดการทะเบียนรถ และคนขับ -->
 <div class="modal fade" id="vehicleManageModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content border-0">
@@ -927,7 +921,7 @@
            totalDist:0, totalLiters:0, 
            totalFuelCost:0, totalRepairCost:0, 
            diffLiters:0, diffBaht:0, 
-           washCount:0, lastMile:0, lastOilChange:0, remainDist:0 
+           washCount:0
        });
     });
 
@@ -977,14 +971,19 @@
         totalFleetCost += (v.totalFuelCost + v.totalRepairCost);
         totalFleetDiffB += v.diffBaht; 
         totalFleetWash += v.washCount; 
-        v.remainDist = (v.lastOilChange + v.interval) - v.lastMile;
+        
+        if (v.lastOilChange > 0) {
+            v.remainDist = (v.lastOilChange + v.interval) - v.lastMile;
+        } else {
+            v.remainDist = null;
+        }
     });
 
     window.currentVehicleMap = vehicleMap;
 
     document.getElementById('fleetDist').innerText = totalFleetDist.toLocaleString();
     document.getElementById('fleetLiters').innerText = totalFleetLiters.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    document.getElementById('fleetCost').innerText = totalFleetCost.toLocaleString();
+    document.getElementById('fleetCost').innerText = totalFleetCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('fleetWash').innerText = totalFleetWash.toLocaleString(); 
     updateStat('fleetDiffB', totalFleetDiffB, ' ฿');
 
@@ -998,7 +997,9 @@
         let avgRate = v.totalLiters > 0 ? (v.totalDist / v.totalLiters) : 0;
         
         let maintStatus = "";
-        if (v.remainDist < 0) {
+        if (v.lastOilChange === 0 || v.remainDist === null) {
+            maintStatus = `<span class="badge bg-secondary">ไม่มีประวัติ นมค.</span>`;
+        } else if (v.remainDist < 0) {
             maintStatus = `<span class="badge bg-danger">เกิน ${Math.abs(v.remainDist).toLocaleString()}</span>`;
         } else if (v.remainDist <= 2000) {
             maintStatus = `<span class="badge bg-warning text-dark">เหลือ ${v.remainDist.toLocaleString()}</span>`;
@@ -1020,8 +1021,8 @@
                     <td class="text-center">${avgRate.toFixed(2)} <span class="text-muted small">/ ${v.rateStd}</span></td>
                     <td class="text-end ${v.diffLiters >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffLiters)}</td>
                     <td class="text-end ${v.diffBaht >= 0 ? 'val-pos' : 'val-neg'}">${formatNum(v.diffBaht)} ฿</td>
-                    <td class="text-end fw-bold text-dark">${v.totalFuelCost.toLocaleString()}</td>
-                    <td class="text-end fw-bold text-danger">${v.totalRepairCost.toLocaleString()}</td>
+                    <td class="text-end fw-bold text-dark">${v.totalFuelCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="text-end fw-bold text-danger">${v.totalRepairCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td class="text-center">${parseFloat(v.washCount.toFixed(1))}</td>
                     <td class="text-center no-export">${maintStatus}</td>
                  </tr>`;
@@ -1059,7 +1060,7 @@
              <td class="text-center">${log.type === 'fuel' ? log.currentRate.toFixed(2) : '-'}</td>
              <td class="text-end ${diffLClass}">${log.type === 'fuel' ? formatNum(log.diffLiters) : '-'}</td>
              <td class="text-end ${diffBClass}">${log.type === 'fuel' ? formatNum(log.diffBaht) : '-'}</td>
-             <td class="text-end fw-bold">${log.cost.toLocaleString()}</td>
+             <td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
              <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
            </tr>`;
        } else if (log.source === 'repair') {
@@ -1080,7 +1081,7 @@
                <td>🔧 ${log.detail}</td>
                <td>${mechanic}</td>
                <td class="text-center">${statusBadge}</td>
-               <td class="text-end fw-bold text-danger">${log.cost.toLocaleString()}</td>
+               <td class="text-end fw-bold text-danger">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                <td class="text-center no-export">
                    <button class="btn btn-sm btn-light text-primary" onclick='editItem("repair", ${rawJson})'><i class="fas fa-edit"></i></button>
                    <button class="btn btn-sm btn-light text-danger" onclick="deleteItem('repair', ${log.row})"><i class="fas fa-trash"></i></button>
@@ -1175,28 +1176,33 @@
     });
     
     let interval = currentCar ? (currentCar.interval || 10000) : 10000;
-    let nextService = realLastOilChange + interval;
-    let remainDist = nextService - realLastMile;
+    let nextService = realLastOilChange > 0 ? (realLastOilChange + interval) : 0;
+    let remainDist = realLastOilChange > 0 ? (nextService - realLastMile) : null;
 
-    document.getElementById('popLastMile').innerText = realLastMile.toLocaleString();
-    document.getElementById('popLastOil').innerText = realLastOilChange.toLocaleString();
-    document.getElementById('popNextService').innerText = nextService.toLocaleString();
+    document.getElementById('popLastMile').innerText = realLastMile > 0 ? realLastMile.toLocaleString() : "-";
+    document.getElementById('popLastOil').innerText = realLastOilChange > 0 ? realLastOilChange.toLocaleString() : "ไม่มีประวัติ";
+    document.getElementById('popNextService').innerText = nextService > 0 ? nextService.toLocaleString() : "-";
     
     let elRemain = document.getElementById('popRemainDist');
     let boxRemain = document.getElementById('boxRemainDist');
     if(elRemain && boxRemain) {
-        elRemain.innerText = remainDist.toLocaleString();
-        
-        if (remainDist < 0) {
-            elRemain.className = "modal-stat-value text-danger";
-            boxRemain.className = "modal-stat-box bg-danger bg-opacity-10 border-danger";
-            elRemain.innerText += " (เกินกำหนด)";
-        } else if (remainDist <= 2000) {
-            elRemain.className = "modal-stat-value text-warning";
-            boxRemain.className = "modal-stat-box bg-warning bg-opacity-10 border-warning";
+        if (remainDist === null) {
+            elRemain.innerText = "ไม่มีประวัติ";
+            elRemain.className = "modal-stat-value text-secondary";
+            boxRemain.className = "modal-stat-box border-secondary";
         } else {
-            elRemain.className = "modal-stat-value text-success";
-            boxRemain.className = "modal-stat-box border-success";
+            elRemain.innerText = remainDist.toLocaleString();
+            if (remainDist < 0) {
+                elRemain.className = "modal-stat-value text-danger";
+                boxRemain.className = "modal-stat-box bg-danger bg-opacity-10 border-danger";
+                elRemain.innerText += " (เกินกำหนด)";
+            } else if (remainDist <= 2000) {
+                elRemain.className = "modal-stat-value text-warning";
+                boxRemain.className = "modal-stat-box bg-warning bg-opacity-10 border-warning";
+            } else {
+                elRemain.className = "modal-stat-value text-success";
+                boxRemain.className = "modal-stat-box border-success";
+            }
         }
     }
 
@@ -1230,11 +1236,11 @@
     document.getElementById('popCount').innerText = sumCount;
     document.getElementById('popWashCount').innerText = parseFloat(sumWash.toFixed(1));
     document.getElementById('popLiters').innerText = sumLiters.toLocaleString();
-    if(document.getElementById('popCost')) document.getElementById('popCost').innerText = sumCost.toLocaleString();
+    if(document.getElementById('popCost')) document.getElementById('popCost').innerText = sumCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('popRate').innerText = avgRate.toFixed(2);
     updatePopStat('popDiffL', sumDiffL);
     updatePopStat('popDiffB', sumDiffB);
-    document.getElementById('popRepairCost').innerText = repairTotal.toLocaleString() + " บาท";
+    document.getElementById('popRepairCost').innerText = repairTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " บาท";
 
     modalFuelPage = 1;
     modalRepairPage = 1;
@@ -1254,9 +1260,9 @@
           let badge = log.type === 'fuel' ? '⛽' : '🚿';
           if (log.type === 'fuel') {
                let rateClass = log.currentRate < 3 ? 'text-danger' : 'text-dark';
-               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters.toFixed(1)}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${log.diffLiters>=0?'val-pos':'val-neg'}">${formatNum(log.diffLiters)}</td><td class="text-end ${log.diffBaht>=0?'val-pos':'val-neg'}">${formatNum(log.diffBaht)}</td><td class="text-end fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters.toFixed(1)}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${log.diffLiters>=0?'val-pos':'val-neg'}">${formatNum(log.diffLiters)}</td><td class="text-end ${log.diffBaht>=0?'val-pos':'val-neg'}">${formatNum(log.diffBaht)}</td><td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
           } else {
-               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-center">-</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end fw-bold text-muted">${log.cost.toLocaleString()}</td></tr>`;
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-center">-</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end fw-bold text-muted">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
           }
       });
       document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="9" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
@@ -1290,7 +1296,7 @@
           else if(log.status === "รออะไหล่") badgeClass = "bg-warning text-dark";
           let statusBadge = `<span class="badge ${badgeClass}">${log.status}</span>`;
 
-          repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-center">${statusBadge}</td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString()}</td></tr>`;
+          repairHtml += `<tr><td>${formatDate(log.date)}</td><td class="text-end font-monospace">${log.mile ? log.mile.toLocaleString() : '-'}</td><td>🔧 ${log.detail}</td><td><small class="text-muted">${mechanic}</small></td><td class="text-center">${statusBadge}</td><td class="text-end text-danger fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
       });
       document.getElementById('detailRepairBody').innerHTML = repairHtml || '<tr><td colspan="6" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
 
@@ -1567,12 +1573,24 @@
     });
   }
 
-  function updateStat(id, val, suffix) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + suffix; el.className = val >= 0 ? "fw-bold mb-0 text-success" : "fw-bold mb-0 text-danger"; } }
-  function updatePopStat(id, val) { let el = document.getElementById(id); if(el) { el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); } }
+  function updateStat(id, val, suffix) { 
+      let el = document.getElementById(id); 
+      if(el) { 
+          el.innerText = (val > 0 ? "+" : "") + val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + suffix; 
+          el.className = val >= 0 ? "fw-bold mb-0 text-success" : "fw-bold mb-0 text-danger"; 
+      } 
+  }
+  function updatePopStat(id, val) { 
+      let el = document.getElementById(id); 
+      if(el) { 
+          el.innerText = (val > 0 ? "+" : "") + val.toFixed(1); 
+          el.className = "modal-stat-value " + (val >= 0 ? 'val-pos' : 'val-neg'); 
+      } 
+  }
   function formatNum(n) { return (n > 0 ? "+" : "") + (n ? n.toFixed(1) : "0.0"); }
   function formatDate(d) { return d ? d.split('-').reverse().join('/') : ''; }
   
- function sortTable(tableId, colIndex, isNumeric) {
+  function sortTable(tableId, colIndex, isNumeric) {
       if (sortDirection[tableId] === undefined) sortDirection[tableId] = true;
       else sortDirection[tableId] = !sortDirection[tableId];
 
@@ -1583,30 +1601,24 @@
       if(rows.length === 0) return;
 
       rows.sort(function(a, b) {
-          // ดึงข้อความใน Cell ออกมา
           let rawA = a.cells[colIndex].innerText.trim();
           let rawB = b.cells[colIndex].innerText.trim();
 
-          // 1. เช็คว่าคอลัมน์นี้เป็นวันที่หรือไม่ (ตรวจจับรูปแบบ DD/MM/YYYY)
           let dateRegex = /(\d{2})\/(\d{2})\/(\d{4})/;
           if (dateRegex.test(rawA) && dateRegex.test(rawB)) {
-              // ฟังก์ชันย่อยสำหรับแปลง DD/MM/YYYY และเวลา ให้เป็น YYYYMMDDHHMM เพื่อเรียงลำดับ
               let parseDate = (str) => {
                   let dMatch = str.match(dateRegex);
-                  let tMatch = str.match(/(\d{2}):(\d{2})/); // หาเวลา HH:MM
-                  
-                  let dPart = dMatch ? dMatch[3] + dMatch[2] + dMatch[1] : ""; // ปี+เดือน+วัน
-                  let tPart = tMatch ? tMatch[1] + tMatch[2] : "0000";         // ชั่วโมง+นาที
+                  let tMatch = str.match(/(\d{2}):(\d{2})/);
+                  let dPart = dMatch ? dMatch[3] + dMatch[2] + dMatch[1] : "";
+                  let tPart = tMatch ? tMatch[1] + tMatch[2] : "0000";
                   return dPart + tPart;
               };
-              
               let dateA = parseDate(rawA);
               let dateB = parseDate(rawB);
               return sortDirection[tableId] ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA);
           }
 
-          // 2. ถ้าไม่ใช่คอลัมน์วันที่ ให้ประมวลผลลบพวกสัญลักษณ์ต่างๆ ออกเหมือนเดิม
-          let valA = rawA.replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(/[\n ]/)[0]; 
+          let valA = rawA.replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(/[\n ]/)[0];
           let valB = rawB.replace(/,/g, '').replace(/฿/g, '').replace(/\+/g, '').split(/[\n ]/)[0];
 
           if (isNumeric) {
@@ -1673,7 +1685,7 @@
       let count = 0;
       let html = "";
       Object.values(window.currentVehicleMap).forEach(function(v) {
-          if (v.remainDist <= 2000) { 
+          if (v.lastOilChange > 0 && v.remainDist !== null && v.remainDist <= 2000) { 
               count++;
               let statusText = v.remainDist < 0 ? `เกินกำหนด ${Math.abs(v.remainDist).toLocaleString()} กม.` : `เหลือ ${v.remainDist.toLocaleString()} กม.`;
               let badgeClass = v.remainDist < 0 ? 'bg-danger' : 'bg-warning text-dark'; 
@@ -1712,7 +1724,7 @@
       </tr></thead><tbody>`;
       
       Object.values(window.currentVehicleMap).forEach(function(v) {
-          if (v.remainDist <= 2000) { 
+          if (v.lastOilChange > 0 && v.remainDist !== null && v.remainDist <= 2000) { 
               let statusText = v.remainDist < 0 ? `เกินกำหนด ${Math.abs(v.remainDist).toLocaleString()} กม.` : `เหลือ ${v.remainDist.toLocaleString()} กม.`;
               let statusColor = v.remainDist < 0 ? '#dc3545' : '#d39e00'; 
               
