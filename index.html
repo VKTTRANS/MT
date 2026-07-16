@@ -1247,7 +1247,6 @@
     if(document.getElementById('popCost')) document.getElementById('popCost').innerText = sumCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('popRate').innerText = avgRate.toFixed(2);
     
-    // อัปเดตส่วนต่างสำหรับ Modal
     if (currentCar && currentCar.rateStd > 0) {
         let elL = document.getElementById('popDiffL');
         if (elL) { elL.innerText = formatNum(sumDiffL); elL.className = "modal-stat-value " + (sumDiffL >= 0 ? 'val-pos' : 'val-neg'); }
