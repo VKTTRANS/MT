@@ -81,13 +81,13 @@
       
       <div class="d-flex gap-2 align-items-center">
          <button class="btn btn-sm btn-outline-secondary" onclick="loadData()" title="รีเฟรชข้อมูล"><i class="fas fa-sync"></i></button>
+         <button id="btnLoadArchive" class="btn btn-sm btn-outline-secondary" onclick="toggleArchive()" title="เปิดเพื่อดึงประวัติในอดีตทั้งหมดมาแสดง (อาจใช้เวลาโหลดนานขึ้น)"><i class="fas fa-database"></i> โหลดประวัติเก่า</button>
          <button class="btn btn-sm btn-danger ms-1" onclick="logout()" title="ออกจากระบบ"><i class="fas fa-power-off"></i></button>
       </div>
     </div>
   </nav>
 
   <div class="container-custom">
-    <!-- ชุดการ์ดสรุปยอด สำหรับแท็บ "สรุปรายคัน" และ "ประวัติน้ำมัน/ล้างรถ" -->
     <div id="cards-fuel-summary" class="row g-2 mb-3">
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
@@ -96,7 +96,6 @@
       <div class="col-12 col-lg"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
     </div>
 
-    <!-- ชุดการ์ดสรุปยอด สำหรับแท็บ "ประวัติซ่อมบำรุง" -->
     <div id="cards-repair" class="row g-2 mb-3" style="display: none;">
       <div class="col-6"><div class="card-stat border-start border-4 border-danger"><small class="text-muted">ค่าซ่อมบำรุงรวม (บาท)</small><h4 class="fw-bold mb-0 text-danger" id="fleetRepairCost">0</h4></div></div>
       <div class="col-6"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">รายการซ่อม (ครั้ง)</small><h4 class="fw-bold mb-0 text-dark" id="fleetRepairCount">0</h4></div></div>
@@ -158,7 +157,7 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
-            <select id="filter-plate-fuel" class="form-select form-select-sm w-auto" onchange="changePage('fuelLogTable', 1)">
+            <select id="filter-plate-fuel" class="form-select form-select-sm" onchange="changePage('fuelLogTable', 1)">
               <option value="">ทุกทะเบียน</option>
             </select>
             <input type="text" id="search-fuelLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา..." onkeyup="changePage('fuelLogTable', 1)">
@@ -173,18 +172,19 @@
                   <th class="sortable" onclick="sortTable('fuelLogTable', 0, false)">วันที่/เวลา <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable" onclick="sortTable('fuelLogTable', 1, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable" onclick="sortTable('fuelLogTable', 2, false)">คนขับ <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th>รายการ</th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 4, true)">Trip A <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 5, true)">ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 6, true)">ราคา/ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-center" onclick="sortTable('fuelLogTable', 7, true)">เรท <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 8, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 9, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
-                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 10, true)">รวมเงิน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable" onclick="sortTable('fuelLogTable', 3, false)">ชำระเงิน <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable" onclick="sortTable('fuelLogTable', 4, false)">สถานที่ <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 5, true)">Trip A <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 6, true)">ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 7, true)">ราคา/ลิตร <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-center" onclick="sortTable('fuelLogTable', 8, true)">เรท <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 9, true)">ต่าง (ลิตร) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 10, true)">ต่าง (บาท) <i class="fas fa-sort ms-1 text-muted"></i></th>
+                  <th class="sortable text-end" onclick="sortTable('fuelLogTable', 11, true)">รวมเงิน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">จัดการ</th>
                 </tr>
               </thead>
-              <tbody id="fuelLogTableBody"><tr class="no-data-row"><td colspan="12" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
+              <tbody id="fuelLogTableBody"><tr class="no-data-row"><td colspan="13" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
           <div id="pg-fuelLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
@@ -200,7 +200,7 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
-            <select id="filter-plate-repair" class="form-select form-select-sm w-auto" onchange="changePage('repairLogTable', 1)">
+            <select id="filter-plate-repair" class="form-select form-select-sm" onchange="changePage('repairLogTable', 1)">
               <option value="">ทุกทะเบียน</option>
             </select>
             <input type="text" id="search-repairLogTable" class="form-control form-control-sm w-auto" placeholder="🔍 ค้นหา (ช่าง, อะไหล่...)" onkeyup="changePage('repairLogTable', 1)">
@@ -378,7 +378,7 @@
             <div class="bg-white rounded shadow-sm overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-striped mb-0 text-nowrap">
-                  <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่/เวลา</th><th style="position: sticky; top:0; background: #f8f9fa;">คนขับ</th><th style="position: sticky; top:0; background: #f8f9fa;">รายการ</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">Trip A</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ลิตร</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-center">เรท</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(L)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(฿)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">รวมเงิน</th></tr></thead>
+                  <thead class="table-light"><tr><th style="position: sticky; top:0; background: #f8f9fa;">วันที่/เวลา</th><th style="position: sticky; top:0; background: #f8f9fa;">คนขับ</th><th style="position: sticky; top:0; background: #f8f9fa;">ชำระเงิน</th><th style="position: sticky; top:0; background: #f8f9fa;">สถานที่</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">Trip A</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ลิตร</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-center">เรท</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(L)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">ต่าง(฿)</th><th style="position: sticky; top:0; background: #f8f9fa;" class="text-end">รวมเงิน</th></tr></thead>
                   <tbody id="detailFuelBody"></tbody>
                 </table>
               </div>
@@ -655,6 +655,21 @@
     checkFilterAndLoad();
   }
 
+  function toggleArchive() {
+      isArchiveLoaded = !isArchiveLoaded;
+      let btn = document.getElementById('btnLoadArchive');
+      if (isArchiveLoaded) {
+          btn.classList.remove('btn-outline-secondary');
+          btn.classList.add('btn-secondary', 'text-white');
+          btn.innerHTML = '<i class="fas fa-database"></i> ซ่อนประวัติเก่า';
+      } else {
+          btn.classList.add('btn-outline-secondary');
+          btn.classList.remove('btn-secondary', 'text-white');
+          btn.innerHTML = '<i class="fas fa-database"></i> โหลดประวัติเก่า';
+      }
+      loadData();
+  }
+
   function checkFilterAndLoad() {
       let sy = parseInt(document.getElementById('filterYear').value);
       let sm = document.getElementById('filterMonth').value;
@@ -720,8 +735,8 @@
             placeholder: "เลือกหรือพิมพ์ระบุชื่อคนขับรถ..."
         });
         $('#repairPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#repairModal') });
-        $('#filter-plate-fuel').select2({ theme: 'bootstrap-5' });
-        $('#filter-plate-repair').select2({ theme: 'bootstrap-5' });
+        $('#filter-plate-fuel').select2({ theme: 'bootstrap-5', width: '180px' });
+        $('#filter-plate-repair').select2({ theme: 'bootstrap-5', width: '180px' });
     }, 100);
   }
 
@@ -1006,7 +1021,7 @@
                 }
                 let wHead = Number(log.washHead) || 0, wTail = Number(log.washTail) || 0;
                 if (wHead > 0 || wTail > 0) v.washCount += (wHead + wTail);
-            } else if (log.type === 'repair') {
+            } else if (log.type === 'repair' || log.type === 'repair_archive') {
                 v.totalRepairCost += (log.cost || 0);
                 totalFleetRepairCost += (log.cost || 0);
                 totalFleetRepairCount++;
@@ -1118,20 +1133,39 @@
                              <button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button>`;
            }
 
-           fuelHtml += `<tr>
-             <td>${dateTimeDisplay}</td>
-             <td class="fw-bold">${log.plate}</td>
-             <td>${log.driver || '-'}</td>
-             <td>${badge} ${log.detail}</td>
-             <td class="text-end">${log.tripA || 0}</td>
-             <td class="text-end">${litersText}</td>
-             <td class="text-end">${(log.price || 0).toFixed(2)}</td>
-             <td class="text-center">${log.type === 'fuel' ? log.currentRate.toFixed(2) : '-'}</td>
-             <td class="text-end ${diffLClass}">${diffLText}</td>
-             <td class="text-end ${diffBClass}">${diffBText}</td>
-             <td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-             <td class="text-center no-export">${actionBtns}</td>
-           </tr>`;
+           if (log.type === 'fuel') {
+               fuelHtml += `<tr>
+                 <td>${dateTimeDisplay}</td>
+                 <td class="fw-bold">${log.plate}</td>
+                 <td>${log.driver || '-'}</td>
+                 <td>${badge} ${log.payment || '-'}</td>
+                 <td>${log.station || '-'}</td>
+                 <td class="text-end">${log.tripA || 0}</td>
+                 <td class="text-end">${litersText}</td>
+                 <td class="text-end">${(log.price || 0).toFixed(2)}</td>
+                 <td class="text-center">${log.currentRate.toFixed(2)}</td>
+                 <td class="text-end ${diffLClass}">${diffLText}</td>
+                 <td class="text-end ${diffBClass}">${diffBText}</td>
+                 <td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                 <td class="text-center no-export">${actionBtns}</td>
+               </tr>`;
+           } else {
+               fuelHtml += `<tr>
+                 <td>${dateTimeDisplay}</td>
+                 <td class="fw-bold">${log.plate}</td>
+                 <td>${log.driver || '-'}</td>
+                 <td>${badge} ${log.payment || '-'}</td>
+                 <td>${log.station || '-'}</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-center">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end">-</td>
+                 <td class="text-end fw-bold text-muted">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                 <td class="text-center no-export">${actionBtns}</td>
+               </tr>`;
+           }
        } else if (log.source === 'repair' || log.source === 'repair_archive') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
@@ -1164,7 +1198,7 @@
        }
     });
 
-    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || `<tr class="no-data-row"><td colspan="12" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
+    document.getElementById('fuelLogTableBody').innerHTML = fuelHtml || `<tr class="no-data-row"><td colspan="13" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     document.getElementById('repairLogTableBody').innerHTML = repairHtml || `<tr class="no-data-row"><td colspan="8" class="text-center py-5">ไม่มีข้อมูล</td></tr>`;
     
     changePage('fuelLogTable', 1);
@@ -1344,12 +1378,12 @@
                let diffLText = hasStd ? formatNum(log.diffLiters) : '-';
                let diffBText = hasStd ? formatNum(log.diffBaht) : '-';
 
-               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters.toFixed(1)}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${diffLClass}">${diffLText}</td><td class="text-end ${diffBClass}">${diffBText}</td><td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.payment || '-'}</td><td>${log.station || '-'}</td><td class="text-end">${log.tripA}</td><td class="text-end">${log.liters.toFixed(1)}</td><td class="text-center ${rateClass}">${log.currentRate.toFixed(2)}</td><td class="text-end ${diffLClass}">${diffLText}</td><td class="text-end ${diffBClass}">${diffBText}</td><td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
           } else {
-               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.detail}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-center">-</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end fw-bold text-muted">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
+               fuelHtml += `<tr><td>${formatDate(log.date)}</td><td>${log.driver || '-'}</td><td>${badge} ${log.payment || '-'}</td><td>${log.station || '-'}</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-center">-</td><td class="text-end">-</td><td class="text-end">-</td><td class="text-end fw-bold text-muted">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`;
           }
       });
-      document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="9" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
+      document.getElementById('detailFuelBody').innerHTML = fuelHtml || '<tr><td colspan="10" class="text-center text-muted py-4">ไม่มีข้อมูล</td></tr>';
 
       let totalPages = Math.ceil(modalFuelData.length / MODAL_PAGE_SIZE);
       let pgHtml = "";
