@@ -81,6 +81,7 @@
       
       <div class="d-flex gap-2 align-items-center">
          <button class="btn btn-sm btn-outline-secondary" onclick="loadData()" title="รีเฟรชข้อมูล"><i class="fas fa-sync"></i></button>
+         <button id="btnLoadArchive" class="btn btn-sm btn-outline-secondary" onclick="toggleArchive()" title="เปิดเพื่อดึงประวัติในอดีตทั้งหมดมาแสดง (อาจใช้เวลาโหลดนานขึ้น)"><i class="fas fa-database"></i> โหลดประวัติเก่า</button>
          <button class="btn btn-sm btn-danger ms-1" onclick="logout()" title="ออกจากระบบ"><i class="fas fa-power-off"></i></button>
       </div>
     </div>
@@ -588,6 +589,8 @@
   let modalRepairPage = 1;
   const MODAL_PAGE_SIZE = 15;
 
+  let isArchiveLoaded = false;
+
   document.getElementById('pinInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') checkLogin();
   });
@@ -644,9 +647,24 @@
     loadData();
   }
 
+  function toggleArchive() {
+      isArchiveLoaded = !isArchiveLoaded;
+      let btn = document.getElementById('btnLoadArchive');
+      if (isArchiveLoaded) {
+          btn.classList.remove('btn-outline-secondary');
+          btn.classList.add('btn-secondary', 'text-white');
+          btn.innerHTML = '<i class="fas fa-database"></i> ซ่อนประวัติเก่า';
+      } else {
+          btn.classList.add('btn-outline-secondary');
+          btn.classList.remove('btn-secondary', 'text-white');
+          btn.innerHTML = '<i class="fas fa-database"></i> โหลดประวัติเก่า';
+      }
+      loadData();
+  }
+
   async function loadData() {
     document.getElementById('loadingOverlay').style.display = 'flex';
-    const data = await callAPI({ action: 'getFleetAnalytics' });
+    const data = await callAPI({ action: 'getFleetAnalytics', loadArchive: isArchiveLoaded });
     document.getElementById('loadingOverlay').style.display = 'none';
     
     if (!data) return;
