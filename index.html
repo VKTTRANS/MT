@@ -922,8 +922,8 @@
            totalFuelCost:0, totalRepairCost:0, 
            diffLiters:0, diffBaht:0, 
            washCount:0,
-           lastMile: v.lastMile || 0,           // รับค่าจาก Server
-           lastOilChange: v.lastOilChange || 0  // รับค่าจาก Server
+           lastMile: v.lastMile || 0,           
+           lastOilChange: v.lastOilChange || 0  
        });
     });
 
@@ -1036,7 +1036,7 @@
     logs.forEach(function(log) {
        let rawJson = JSON.stringify(log).replace(/"/g, "&quot;");
        
-       if (log.source === 'fuel') {
+       if (log.source === 'fuel' || log.source === 'fuel_archive') {
            let badge = log.type === 'fuel' ? '<i class="fas fa-gas-pump text-success"></i>' : '<i class="fas fa-shower text-info"></i>';
            let litersText = log.type === 'fuel' ? log.liters.toFixed(1) : '-';
            
@@ -1048,6 +1048,14 @@
            let diffBText = (log.type === 'fuel' && hasStd) ? formatNum(log.diffBaht) : '-';
            
            var dateTimeDisplay = log.time ? formatDate(log.date) + ' <div class="small text-muted">' + log.time + '</div>' : formatDate(log.date);
+
+           let actionBtns = "";
+           if (log.source === 'fuel_archive') {
+               actionBtns = '<span class="badge bg-secondary">Archive</span>';
+           } else {
+               actionBtns = `<button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button>
+                             <button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button>`;
+           }
 
            fuelHtml += `<tr>
              <td>${dateTimeDisplay}</td>
@@ -1061,9 +1069,9 @@
              <td class="text-end ${diffLClass}">${diffLText}</td>
              <td class="text-end ${diffBClass}">${diffBText}</td>
              <td class="text-end fw-bold">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-             <td class="text-center no-export"><button class="btn btn-sm btn-light text-primary" onclick='editItem("fuel", ${rawJson})'><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteItem('fuel', ${log.row})"><i class="fas fa-trash"></i></button></td>
+             <td class="text-center no-export">${actionBtns}</td>
            </tr>`;
-       } else if (log.source === 'repair') {
+       } else if (log.source === 'repair' || log.source === 'repair_archive') {
            let mechanic = log.mechanic || "-";
            let mileText = log.mile ? log.mile.toLocaleString() : "-";
            
@@ -1074,6 +1082,14 @@
            
            let statusBadge = `<span class="badge ${badgeClass}">${log.status}</span>`;
 
+           let actionBtns = "";
+           if (log.source === 'repair_archive') {
+               actionBtns = '<span class="badge bg-secondary">Archive</span>';
+           } else {
+               actionBtns = `<button class="btn btn-sm btn-light text-primary" onclick='editItem("repair", ${rawJson})'><i class="fas fa-edit"></i></button>
+                             <button class="btn btn-sm btn-light text-danger" onclick="deleteItem('repair', ${log.row})"><i class="fas fa-trash"></i></button>`;
+           }
+
            repairHtml += `<tr>
                <td>${formatDate(log.date)}</td>
                <td class="fw-bold">${log.plate}</td>
@@ -1082,10 +1098,7 @@
                <td>${mechanic}</td>
                <td class="text-center">${statusBadge}</td>
                <td class="text-end fw-bold text-danger">${log.cost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-               <td class="text-center no-export">
-                   <button class="btn btn-sm btn-light text-primary" onclick='editItem("repair", ${rawJson})'><i class="fas fa-edit"></i></button>
-                   <button class="btn btn-sm btn-light text-danger" onclick="deleteItem('repair', ${log.row})"><i class="fas fa-trash"></i></button>
-               </td>
+               <td class="text-center no-export">${actionBtns}</td>
            </tr>`;
        }
     });
@@ -1163,24 +1176,13 @@
   function showDetail(plate) {
     document.getElementById('detailPlate').innerText = plate;
     let currentCar = MasterVehicles.find(function(v) { return v.plate === plate; });
-    let realLastMile = 0, realLastOilChange = 0;
-    
-    RawLogs.forEach(function(log) {
-        if(log.plate === plate) {
-            let m = Number(String(log.mile).replace(/,/g, '')) || 0;
-            if(m > realLastMile) realLastMile = m;
-            if(log.type === 'repair' && log.detail && log.detail.includes("ถ่ายน้ำมันเครื่อง")) {
-                if(m > realLastOilChange) realLastOilChange = m;
-            }
-        }
-    });
     
     let interval = currentCar ? (currentCar.interval || 10000) : 10000;
-    let nextService = realLastOilChange > 0 ? (realLastOilChange + interval) : 0;
-    let remainDist = realLastOilChange > 0 ? (nextService - realLastMile) : null;
+    let nextService = currentCar.lastOilChange > 0 ? (currentCar.lastOilChange + interval) : 0;
+    let remainDist = currentCar.lastOilChange > 0 ? (nextService - currentCar.lastMile) : null;
 
-    document.getElementById('popLastMile').innerText = realLastMile > 0 ? realLastMile.toLocaleString() : "-";
-    document.getElementById('popLastOil').innerText = realLastOilChange > 0 ? realLastOilChange.toLocaleString() : "ไม่มีประวัติ";
+    document.getElementById('popLastMile').innerText = currentCar.lastMile > 0 ? currentCar.lastMile.toLocaleString() : "-";
+    document.getElementById('popLastOil').innerText = currentCar.lastOilChange > 0 ? currentCar.lastOilChange.toLocaleString() : "ไม่มีประวัติ";
     document.getElementById('popNextService').innerText = nextService > 0 ? nextService.toLocaleString() : "-";
     
     let elRemain = document.getElementById('popRemainDist');
