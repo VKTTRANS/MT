@@ -260,7 +260,7 @@
                   <th class="sortable" onclick="sortTable('repairLogTable', 1, false)">ทะเบียน <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="sortable text-end" onclick="sortTable('repairLogTable', 2, true)">เลขไมล์ <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th>รายการซ่อม</th>
-                  <th>ช่าง/อู่</th>
+                  <th>ผู้แจ้ง/ช่าง/อู่ <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center">สถานะ</th>
                   <th class="sortable text-end" onclick="sortTable('repairLogTable', 6, true)">ค่าใช้จ่าย <i class="fas fa-sort ms-1 text-muted"></i></th>
                   <th class="text-center no-export">จัดการ</th>
@@ -339,7 +339,7 @@
               <input type="text" id="searchVehicleInput" class="form-control rounded-pill px-3" style="max-width: 300px;" placeholder="🔍 ค้นหาทะเบียนรถ หรือคนขับ..." onkeyup="renderVehicleList()">
               <button class="btn btn-primary fw-bold rounded-pill px-4" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; box-shadow: 0 4px 6px rgba(37,99,235,0.2);" onclick="openVehicleForm('add')"><i class="fas fa-plus"></i> เพิ่มรถใหม่</button>
            </div>
-           <div class="table-responsive bg-white rounded-4 shadow-sm border">
+           <div class="table-responsive bg-white rounded-3 shadow-sm border">
               <table class="table table-hover align-middle text-nowrap mb-0">
                  <thead class="table-light">
                     <tr>
@@ -357,32 +357,32 @@
         </div>
 
         <div id="vehicleFormSection" style="display: none;">
-           <div class="card shadow-sm border-0 rounded-4">
+           <div class="card shadow-sm border-0 rounded-3">
               <div class="card-body p-4">
                  <h5 class="fw-bold mb-4 text-primary border-bottom pb-3" id="vFormTitle">เพิ่มข้อมูลรถ</h5>
                  <input type="hidden" id="vFormAction">
                  <input type="hidden" id="vFormOldPlate">
                  
-                 <div class="row g-4 mb-4">
+                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                        <label class="form-label fw-bold text-muted small text-uppercase">ทะเบียนรถ</label>
-                       <input type="text" class="form-control form-control-lg" id="vFormPlate" placeholder="เช่น 70-8734">
+                       <input type="text" class="form-control" id="vFormPlate" placeholder="เช่น 70-8734">
                     </div>
                     <div class="col-md-6">
                        <label class="form-label fw-bold text-muted small text-uppercase">ประเภทรถ</label>
-                       <input type="text" class="form-control form-control-lg" id="vFormType" placeholder="เช่น รถกระบะ, รถบรรทุก">
+                       <input type="text" class="form-control" id="vFormType" placeholder="เช่น รถกระบะ, รถบรรทุก">
                     </div>
                     <div class="col-md-6">
                        <label class="form-label fw-bold text-muted small text-uppercase">คนขับหลัก</label>
-                       <input type="text" class="form-control form-control-lg" id="vFormDriver" placeholder="ชื่อ-สกุล คนขับหลัก">
+                       <input type="text" class="form-control" id="vFormDriver" placeholder="ชื่อ-สกุล คนขับหลัก">
                     </div>
                     <div class="col-md-3">
                        <label class="form-label fw-bold text-muted small text-uppercase">เรทมาตรฐาน (กม./ลิตร)</label>
-                       <input type="number" step="0.1" class="form-control form-control-lg" id="vFormRate" placeholder="เช่น 10.5">
+                       <input type="number" step="0.1" class="form-control" id="vFormRate" placeholder="เช่น 10.5">
                     </div>
                     <div class="col-md-3">
                        <label class="form-label fw-bold text-muted small text-uppercase">ระยะเช็คระยะ (กม.)</label>
-                       <input type="number" class="form-control form-control-lg" id="vFormInterval" placeholder="เช่น 10000">
+                       <input type="number" class="form-control" id="vFormInterval" placeholder="เช่น 10000">
                     </div>
                  </div>
                  <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
@@ -405,13 +405,13 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body bg-light p-4">
-        <ul class="nav nav-tabs mb-4" id="detailTab" role="tablist">
+        <ul class="nav nav-tabs mb-3" id="detailTab" role="tablist">
           <li class="nav-item"><button class="nav-link active rounded-pill px-4" data-bs-toggle="tab" data-bs-target="#detail-fuel">⛽ น้ำมัน & ล้างรถ</button></li>
           <li class="nav-item"><button class="nav-link rounded-pill px-4" data-bs-toggle="tab" data-bs-target="#detail-repair">🔧 ประวัติซ่อม</button></li>
         </ul>
         <div class="tab-content">
           <div class="tab-pane fade show active" id="detail-fuel">
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">จำนวนเติม</div><div class="modal-stat-value text-dark" id="popCount">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">ล้างรถ (ครั้ง)</div><div class="modal-stat-value text-info" id="popWashCount">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมลิตร</div><div class="modal-stat-value text-primary" id="popLiters">0</div></div></div>
@@ -419,34 +419,34 @@
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">เรทเฉลี่ย</div><div class="modal-stat-value text-info" id="popRate">0.00</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมต่าง (บาท)</div><div class="modal-stat-value" id="popDiffB">0</div></div></div>
             </div>
-            <div class="bg-white rounded-4 shadow-sm border overflow-hidden">
+            <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-hover mb-0 text-nowrap align-middle">
                   <thead class="table-light"><tr><th style="position: sticky; top:0;">วันที่/เวลา</th><th style="position: sticky; top:0;">คนขับ</th><th style="position: sticky; top:0;">ชำระเงิน</th><th style="position: sticky; top:0;">สถานที่</th><th style="position: sticky; top:0;" class="text-end">Trip A</th><th style="position: sticky; top:0;" class="text-end">ลิตร</th><th style="position: sticky; top:0;" class="text-center">เรท</th><th style="position: sticky; top:0;" class="text-end">ต่าง(L)</th><th style="position: sticky; top:0;" class="text-end">ต่าง(฿)</th><th style="position: sticky; top:0;" class="text-end">รวมเงิน</th></tr></thead>
                   <tbody id="detailFuelBody"></tbody>
                 </table>
               </div>
-              <div id="modalFuelPagination" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+              <div id="modalFuelPagination" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
             </div>
           </div>
           <div class="tab-pane fade" id="detail-repair">
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
               <div class="col-6 col-md-3"><div class="modal-stat-box"><div class="modal-stat-title">ไมล์ล่าสุด</div><div class="modal-stat-value text-dark" id="popLastMile">0</div></div></div>
               <div class="col-6 col-md-3"><div class="modal-stat-box"><div class="modal-stat-title">ถ่าย นมค. ครั้งล่าสุด</div><div class="modal-stat-value text-primary" id="popLastOil">0</div></div></div>
               <div class="col-6 col-md-3"><div class="modal-stat-box"><div class="modal-stat-title">รอบถัดไป (ที่ระยะ)</div><div class="modal-stat-value text-dark" id="popNextService">0</div></div></div>
               <div class="col-6 col-md-3"><div class="modal-stat-box" id="boxRemainDist"><div class="modal-stat-title">เหลือวิ่งได้อีก (กม.)</div><div class="modal-stat-value" id="popRemainDist">0</div></div></div>
             </div>
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
               <div class="col-12"><div class="modal-stat-box bg-warning bg-opacity-10 border-warning border"><div class="modal-stat-title">ค่าซ่อมรวม</div><div class="modal-stat-value text-danger" id="popRepairCost">0</div></div></div>
             </div>
-            <div class="bg-white rounded-4 shadow-sm border overflow-hidden">
+            <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-hover mb-0 text-nowrap align-middle">
                   <thead class="table-light"><tr><th style="position: sticky; top:0;">วันที่</th><th style="position: sticky; top:0;" class="text-end">เลขไมล์</th><th style="position: sticky; top:0;">รายการซ่อม</th><th style="position: sticky; top:0;">ช่าง/อู่</th><th style="position: sticky; top:0;" class="text-center">สถานะ</th><th style="position: sticky; top:0;" class="text-end">ค่าใช้จ่าย</th></tr></thead>
                   <tbody id="detailRepairBody"></tbody>
                 </table>
               </div>
-              <div id="modalRepairPagination" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+              <div id="modalRepairPagination" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
             </div>
           </div>
         </div>
@@ -526,8 +526,8 @@
                 </span>
               </div>
               <div class="mt-3">
-                <label class="form-label fw-bold text-muted small">ชำระเงิน</label>
-                <select class="form-select bg-white" id="fuelPayment">
+                <label class="form-label fw-bold text-muted small">ชำระเงิน (เลือกหรือพิมพ์ใหม่)</label>
+                <select class="form-select bg-white" id="fuelPayment" style="width: 100%;">
                   <option value="เงินสด/โอน">เงินสด/โอน</option>
                   <option value="เครดิต">เครดิต</option>
                   <option value="แทงค์บริษัท">แทงค์บริษัท</option>
@@ -552,8 +552,10 @@
             </div>
           </div>
           <div class="mt-4">
-            <label class="form-label fw-bold text-muted small">สถานที่</label>
-            <input type="text" class="form-control" id="fuelStation" placeholder="ระบุสถานที่/ปั๊ม">
+            <label class="form-label fw-bold text-muted small">สถานที่ (เลือกหรือพิมพ์ใหม่)</label>
+            <select class="form-select bg-white" id="fuelStation" style="width: 100%;">
+              <option value=""></option>
+            </select>
           </div>
           <button type="button" onclick="submitFuel()" class="btn btn-success w-100 mt-4 fw-bold py-3 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-size: 1rem;">บันทึก</button>
         </form>
@@ -593,8 +595,10 @@
                 <input type="number" class="form-control" id="repairMile">
             </div>
             <div class="col-md-6">
-                <label class="form-label fw-bold text-muted small">ช่าง / อู่</label>
-                <input type="text" class="form-control" id="repairMechanic">
+                <label class="form-label fw-bold text-muted small">ผู้แจ้ง / ช่าง / อู่ (เลือกหรือพิมพ์ใหม่)</label>
+                <select class="form-select" id="repairMechanic" style="width: 100%;">
+                  <option value=""></option>
+                </select>
             </div>
           </div>
 
@@ -805,7 +809,7 @@
     document.getElementById('filter-plate-fuel').innerHTML = filterPlateOptions;
     document.getElementById('filter-plate-repair').innerHTML = filterPlateOptions;
     
-    updateDriverDropdownOptions();
+    updateDynamicDropdowns();
     processData();
 
     if(document.getElementById('vehicleManageModal').classList.contains('show')) {
@@ -820,24 +824,66 @@
             tags: true,
             placeholder: "เลือกหรือพิมพ์ระบุชื่อคนขับรถ..."
         });
+        $('#fuelPayment').select2({ 
+            theme: 'bootstrap-5', 
+            dropdownParent: $('#fuelModal'),
+            tags: true
+        });
+        $('#fuelStation').select2({ 
+            theme: 'bootstrap-5', 
+            dropdownParent: $('#fuelModal'),
+            tags: true,
+            placeholder: "ระบุสถานที่/ปั๊ม"
+        });
         $('#repairPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#repairModal') });
+        $('#repairMechanic').select2({ 
+            theme: 'bootstrap-5', 
+            dropdownParent: $('#repairModal'),
+            tags: true,
+            placeholder: "ระบุชื่อผู้แจ้ง ช่าง หรืออู่"
+        });
         $('#filter-plate-fuel').select2({ theme: 'bootstrap-5', width: '200px' });
         $('#filter-plate-repair').select2({ theme: 'bootstrap-5', width: '200px' });
     }, 100);
   }
 
-  function updateDriverDropdownOptions() {
+  function updateDynamicDropdowns() {
       let driverSet = new Set();
+      let paymentSet = new Set();
+      let stationSet = new Set();
+      let mechanicSet = new Set();
+
       MasterVehicles.forEach(function(v) {
           if(v.mainDriver) driverSet.add(v.mainDriver.trim());
           if(v.tempDriver) driverSet.add(v.tempDriver.trim());
       });
-      
-      let html = '<option value="">ไม่มีคนขับ</option>';
-      driverSet.forEach(function(name) {
-          if(name) html += `<option value="${name}">${name}</option>`;
+
+      RawLogs.forEach(function(log) {
+          if (log.source.includes('fuel')) {
+              if (log.payment) paymentSet.add(log.payment.trim());
+              if (log.station) stationSet.add(log.station.trim());
+          } else if (log.source.includes('repair')) {
+              if (log.mechanic) mechanicSet.add(log.mechanic.trim());
+          }
       });
-      document.getElementById('fuelDriverSelect').innerHTML = html;
+      
+      let driverHtml = '<option value="">ไม่มีคนขับ</option>';
+      driverSet.forEach(function(name) { if(name) driverHtml += `<option value="${name}">${name}</option>`; });
+      document.getElementById('fuelDriverSelect').innerHTML = driverHtml;
+
+      let paymentHtml = '<option value="เงินสด/โอน">เงินสด/โอน</option><option value="เครดิต">เครดิต</option><option value="แทงค์บริษัท">แทงค์บริษัท</option>';
+      paymentSet.forEach(function(p) { 
+          if(p && p !== "เงินสด/โอน" && p !== "เครดิต" && p !== "แทงค์บริษัท") paymentHtml += `<option value="${p}">${p}</option>`; 
+      });
+      document.getElementById('fuelPayment').innerHTML = paymentHtml;
+
+      let stationHtml = '<option value=""></option>';
+      stationSet.forEach(function(s) { if(s) stationHtml += `<option value="${s}">${s}</option>`; });
+      document.getElementById('fuelStation').innerHTML = stationHtml;
+
+      let mechanicHtml = '<option value=""></option>';
+      mechanicSet.forEach(function(m) { if(m) mechanicHtml += `<option value="${m}">${m}</option>`; });
+      document.getElementById('repairMechanic').innerHTML = mechanicHtml;
   }
 
   function switchCards(tabName) {
@@ -1527,6 +1573,8 @@
     document.getElementById('fuelForm').reset();
     $('#fuelPlate').val('').trigger('change');
     $('#fuelDriverSelect').val('').trigger('change');
+    $('#fuelPayment').val('เงินสด/โอน').trigger('change');
+    $('#fuelStation').val('').trigger('change');
     
     let now = new Date();
     document.getElementById('fuelDate').valueAsDate = now;
@@ -1613,6 +1661,7 @@
   function openRepairModal() {
     document.getElementById('repairForm').reset();
     $('#repairPlate').val('').trigger('change');
+    $('#repairMechanic').val('').trigger('change');
     document.getElementById('repairDate').valueAsDate = new Date();
     document.getElementById('repairAction').value = 'add';
     document.getElementById('repairTotalCost').innerText = "0";
@@ -1714,7 +1763,6 @@
         document.getElementById('fuelDate').value = data.date;
         document.getElementById('fuelTime').value = data.time || '';
         $('#fuelPlate').val(data.plate).trigger('change');
-        document.getElementById('fuelStation').value = data.station;
         
         setTimeout(() => {
             if(data.driver) {
@@ -1722,6 +1770,18 @@
                     $('#fuelDriverSelect').append(new Option(data.driver, data.driver, true, true));
                 }
                 $('#fuelDriverSelect').val(data.driver).trigger('change');
+            }
+            if(data.payment) {
+                if ($('#fuelPayment').find("option[value='" + data.payment + "']").length === 0) {
+                    $('#fuelPayment').append(new Option(data.payment, data.payment, true, true));
+                }
+                $('#fuelPayment').val(data.payment).trigger('change');
+            }
+            if(data.station) {
+                if ($('#fuelStation').find("option[value='" + data.station + "']").length === 0) {
+                    $('#fuelStation').append(new Option(data.station, data.station, true, true));
+                }
+                $('#fuelStation').val(data.station).trigger('change');
             }
         }, 200);
 
@@ -1731,7 +1791,6 @@
            document.getElementById('fuelTrip').value = data.tripA;
            document.getElementById('fuelLiters').value = data.liters;
            document.getElementById('fuelTotal').value = data.cost; 
-           document.getElementById('fuelPayment').value = data.payment;
            calculateRealtimePrice();
         } else {
            setMode('wash');
@@ -1746,7 +1805,15 @@
         document.getElementById('repairDate').value = data.date;
         $('#repairPlate').val(data.plate).trigger('change');
         document.getElementById('repairMile').value = data.mile;
-        document.getElementById('repairMechanic').value = data.mechanic;
+        
+        setTimeout(() => {
+            if(data.mechanic) {
+                if ($('#repairMechanic').find("option[value='" + data.mechanic + "']").length === 0) {
+                    $('#repairMechanic').append(new Option(data.mechanic, data.mechanic, true, true));
+                }
+                $('#repairMechanic').val(data.mechanic).trigger('change');
+            }
+        }, 200);
         
         document.getElementById('btnAddRepairRow').style.display = 'none';
         let row = document.querySelector('.repair-item-row');
