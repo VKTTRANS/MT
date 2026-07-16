@@ -921,18 +921,10 @@
            totalDist:0, totalLiters:0, 
            totalFuelCost:0, totalRepairCost:0, 
            diffLiters:0, diffBaht:0, 
-           washCount:0
+           washCount:0,
+           lastMile: v.lastMile || 0,           // รับค่าจาก Server
+           lastOilChange: v.lastOilChange || 0  // รับค่าจาก Server
        });
-    });
-
-    RawLogs.forEach(function(log) {
-        if(vehicleMap[log.plate]) {
-            let m = Number(String(log.mile).replace(/,/g, '')) || 0;
-            if(m > vehicleMap[log.plate].lastMile) vehicleMap[log.plate].lastMile = m;
-            if(log.type === 'repair' && log.detail && log.detail.includes("ถ่ายน้ำมันเครื่อง")) {
-                if(m > vehicleMap[log.plate].lastOilChange) vehicleMap[log.plate].lastOilChange = m;
-            }
-        }
     });
 
     FilteredLogs = RawLogs.filter(function(log) {
