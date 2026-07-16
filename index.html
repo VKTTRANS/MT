@@ -57,8 +57,8 @@
       <div class="d-flex align-items-center gap-3 flex-wrap">
          <span class="navbar-brand fw-bold text-primary m-0"><i class="fas fa-chart-line"></i> VKT Analytics</span>
          <div class="d-flex align-items-center bg-light border rounded px-2">
-            <select id="filterYear" class="form-select form-select-sm border-0 bg-transparent" onchange="processData()" style="width: auto;"></select>
-            <select id="filterMonth" class="form-select form-select-sm border-0 bg-transparent" onchange="processData()" style="width: auto;">
+            <select id="filterYear" class="form-select form-select-sm border-0 bg-transparent" onchange="checkFilterAndLoad()" style="width: auto;"></select>
+            <select id="filterMonth" class="form-select form-select-sm border-0 bg-transparent" onchange="checkFilterAndLoad()" style="width: auto;">
                <option value="all">ทุกเดือน</option>
                <option value="01">ม.ค.</option><option value="02">ก.พ.</option><option value="03">มี.ค.</option>
                <option value="04">เม.ย.</option><option value="05">พ.ค.</option><option value="06">มิ.ย.</option>
@@ -81,25 +81,31 @@
       
       <div class="d-flex gap-2 align-items-center">
          <button class="btn btn-sm btn-outline-secondary" onclick="loadData()" title="รีเฟรชข้อมูล"><i class="fas fa-sync"></i></button>
-         <button id="btnLoadArchive" class="btn btn-sm btn-outline-secondary" onclick="toggleArchive()" title="เปิดเพื่อดึงประวัติในอดีตทั้งหมดมาแสดง (อาจใช้เวลาโหลดนานขึ้น)"><i class="fas fa-database"></i> โหลดประวัติเก่า</button>
          <button class="btn btn-sm btn-danger ms-1" onclick="logout()" title="ออกจากระบบ"><i class="fas fa-power-off"></i></button>
       </div>
     </div>
   </nav>
 
   <div class="container-custom">
-    <div class="row g-2 mb-3">
+    <!-- ชุดการ์ดสรุปยอด สำหรับแท็บ "สรุปรายคัน" และ "ประวัติน้ำมัน/ล้างรถ" -->
+    <div id="cards-fuel-summary" class="row g-2 mb-3">
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
-      <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
+      <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม (บาท)</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-secondary"><small class="text-muted">ล้างรถ (ครั้ง)</small><h4 class="fw-bold mb-0 text-secondary" id="fleetWash">0</h4></div></div>
       <div class="col-12 col-lg"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
     </div>
 
+    <!-- ชุดการ์ดสรุปยอด สำหรับแท็บ "ประวัติซ่อมบำรุง" -->
+    <div id="cards-repair" class="row g-2 mb-3" style="display: none;">
+      <div class="col-6"><div class="card-stat border-start border-4 border-danger"><small class="text-muted">ค่าซ่อมบำรุงรวม (บาท)</small><h4 class="fw-bold mb-0 text-danger" id="fleetRepairCost">0</h4></div></div>
+      <div class="col-6"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">รายการซ่อม (ครั้ง)</small><h4 class="fw-bold mb-0 text-dark" id="fleetRepairCount">0</h4></div></div>
+    </div>
+
     <ul class="nav nav-tabs mb-2" id="mainTab" role="tablist">
-      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-summary">📊 สรุปรายคัน</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fuel-logs">⛽ ประวัติน้ำมัน/ล้างรถ</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-repair-logs">🔧 ประวัติซ่อมบำรุง</button></li>
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-summary" onclick="switchCards('summary')">📊 สรุปรายคัน</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fuel-logs" onclick="switchCards('fuel')">⛽ ประวัติน้ำมัน/ล้างรถ</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-repair-logs" onclick="switchCards('repair')">🔧 ประวัติซ่อมบำรุง</button></li>
     </ul>
 
     <div class="tab-content">
@@ -644,22 +650,41 @@
         yearSel.appendChild(opt);
     }
     document.getElementById('filterMonth').value = (new Date().getMonth() + 1).toString().padStart(2, '0');
-    loadData();
+    
+    isArchiveLoaded = false;
+    checkFilterAndLoad();
   }
 
-  function toggleArchive() {
-      isArchiveLoaded = !isArchiveLoaded;
-      let btn = document.getElementById('btnLoadArchive');
-      if (isArchiveLoaded) {
-          btn.classList.remove('btn-outline-secondary');
-          btn.classList.add('btn-secondary', 'text-white');
-          btn.innerHTML = '<i class="fas fa-database"></i> ซ่อนประวัติเก่า';
-      } else {
-          btn.classList.add('btn-outline-secondary');
-          btn.classList.remove('btn-secondary', 'text-white');
-          btn.innerHTML = '<i class="fas fa-database"></i> โหลดประวัติเก่า';
+  function checkFilterAndLoad() {
+      let sy = parseInt(document.getElementById('filterYear').value);
+      let sm = document.getElementById('filterMonth').value;
+      let d = new Date();
+      let cy = d.getFullYear();
+      let cm = d.getMonth() + 1;
+      
+      let needArchive = false;
+      if (sy < cy) {
+          needArchive = true;
+      } else if (sy === cy) {
+          if (sm === 'all') {
+              needArchive = true; 
+          } else {
+              let thresholdMonth = cm - 3; 
+              if (parseInt(sm) <= thresholdMonth) {
+                  needArchive = true;
+              }
+          }
       }
-      loadData();
+
+      if (MasterVehicles.length === 0) {
+          isArchiveLoaded = needArchive;
+          loadData();
+      } else if (needArchive && !isArchiveLoaded) {
+          isArchiveLoaded = true;
+          loadData();
+      } else {
+          processData();
+      }
   }
 
   async function loadData() {
@@ -712,6 +737,16 @@
           if(name) html += `<option value="${name}">${name}</option>`;
       });
       document.getElementById('fuelDriverSelect').innerHTML = html;
+  }
+
+  function switchCards(tabName) {
+      if (tabName === 'repair') {
+          document.getElementById('cards-fuel-summary').style.display = 'none';
+          document.getElementById('cards-repair').style.display = 'flex';
+      } else {
+          document.getElementById('cards-fuel-summary').style.display = 'flex';
+          document.getElementById('cards-repair').style.display = 'none';
+      }
   }
 
   function openVehicleManageModal() {
@@ -955,6 +990,9 @@
        return true;
     });
 
+    let totalFleetRepairCost = 0;
+    let totalFleetRepairCount = 0;
+
     FilteredLogs.forEach(function(log) {
         let v = vehicleMap[log.plate];
         if (v) {
@@ -970,15 +1008,17 @@
                 if (wHead > 0 || wTail > 0) v.washCount += (wHead + wTail);
             } else if (log.type === 'repair') {
                 v.totalRepairCost += (log.cost || 0);
+                totalFleetRepairCost += (log.cost || 0);
+                totalFleetRepairCount++;
             }
         }
     });
 
-    let totalFleetDist=0, totalFleetLiters=0, totalFleetCost=0, totalFleetDiffB=0, totalFleetWash=0;
+    let totalFleetDist=0, totalFleetLiters=0, totalFleetFuelCost=0, totalFleetDiffB=0, totalFleetWash=0;
     Object.values(vehicleMap).forEach(function(v) {
         totalFleetDist += v.totalDist; 
         totalFleetLiters += v.totalLiters;
-        totalFleetCost += (v.totalFuelCost + v.totalRepairCost);
+        totalFleetFuelCost += v.totalFuelCost; 
         totalFleetDiffB += v.diffBaht; 
         totalFleetWash += v.washCount; 
         
@@ -993,9 +1033,12 @@
 
     document.getElementById('fleetDist').innerText = totalFleetDist.toLocaleString();
     document.getElementById('fleetLiters').innerText = totalFleetLiters.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    document.getElementById('fleetCost').innerText = totalFleetCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('fleetCost').innerText = totalFleetFuelCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('fleetWash').innerText = totalFleetWash.toLocaleString(); 
     updateStat('fleetDiffB', totalFleetDiffB, ' ฿');
+
+    document.getElementById('fleetRepairCost').innerText = totalFleetRepairCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('fleetRepairCount').innerText = totalFleetRepairCount.toLocaleString();
 
     renderSummaryTable(vehicleMap);
     renderAllLogsTable(FilteredLogs);
