@@ -157,6 +157,11 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
+            <div style="width: 160px;">
+                <select id="filter-type-summary" class="form-select form-select-sm" onchange="changePage('fleetTable', 1)">
+                  <option value="">ทุกประเภทรถ</option>
+                </select>
+            </div>
             <input type="text" id="search-fleetTable" class="form-control form-control-sm w-auto rounded-pill px-3" placeholder="🔍 ค้นหา (ทะเบียน, คนขับ)..." onkeyup="changePage('fleetTable', 1)">
             <button class="btn btn-sm btn-success text-nowrap rounded-pill px-3 fw-medium" style="background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="previewExport('fleetTable', 'Summary_Fleet')"><i class="fas fa-file-excel me-1"></i> Export</button>
             <button class="btn btn-sm btn-danger text-nowrap rounded-pill px-3 fw-medium" style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none;" onclick="showMaintenanceAlert()"><i class="fas fa-bell me-1"></i> รถใกล้ถึงรอบ</button>
@@ -197,6 +202,11 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
+            <div style="width: 160px;">
+                <select id="filter-type-fuel" class="form-select form-select-sm" onchange="changePage('fuelLogTable', 1)">
+                  <option value="">ทุกประเภทรถ</option>
+                </select>
+            </div>
             <div style="width: 200px;">
                 <select id="filter-plate-fuel" class="form-select form-select-sm" onchange="changePage('fuelLogTable', 1)">
                   <option value="">ทุกทะเบียน</option>
@@ -242,6 +252,11 @@
               <option value="100">100 แถว</option>
               <option value="-1">ทั้งหมด</option>
             </select>
+            <div style="width: 160px;">
+                <select id="filter-type-repair" class="form-select form-select-sm" onchange="changePage('repairLogTable', 1)">
+                  <option value="">ทุกประเภทรถ</option>
+                </select>
+            </div>
             <div style="width: 200px;">
                 <select id="filter-plate-repair" class="form-select form-select-sm" onchange="changePage('repairLogTable', 1)">
                   <option value="">ทุกทะเบียน</option>
@@ -817,6 +832,10 @@
     }
 
     setTimeout(() => {
+        $('#filter-type-summary').select2({ theme: 'bootstrap-5', width: '160px' });
+        $('#filter-type-fuel').select2({ theme: 'bootstrap-5', width: '160px' });
+        $('#filter-type-repair').select2({ theme: 'bootstrap-5', width: '160px' });
+
         $('#fuelPlate').select2({ theme: 'bootstrap-5', dropdownParent: $('#fuelModal') });
         $('#fuelDriverSelect').select2({ 
             theme: 'bootstrap-5', 
@@ -852,10 +871,12 @@
       let paymentSet = new Set();
       let stationSet = new Set();
       let mechanicSet = new Set();
+      let typeSet = new Set(); 
 
       MasterVehicles.forEach(function(v) {
           if(v.mainDriver) driverSet.add(v.mainDriver.trim());
           if(v.tempDriver) driverSet.add(v.tempDriver.trim());
+          if(v.type) typeSet.add(v.type.trim());
       });
 
       RawLogs.forEach(function(log) {
@@ -867,6 +888,12 @@
           }
       });
       
+      let typeHtml = '<option value="">ทุกประเภทรถ</option>';
+      typeSet.forEach(function(t) { if(t) typeHtml += `<option value="${t}">${t}</option>`; });
+      document.getElementById('filter-type-summary').innerHTML = typeHtml;
+      document.getElementById('filter-type-fuel').innerHTML = typeHtml;
+      document.getElementById('filter-type-repair').innerHTML = typeHtml;
+
       let driverHtml = '<option value="">ไม่มีคนขับ</option>';
       driverSet.forEach(function(name) { if(name) driverHtml += `<option value="${name}">${name}</option>`; });
       document.getElementById('fuelDriverSelect').innerHTML = driverHtml;
@@ -1339,17 +1366,43 @@
   function isRowMatch(row, tableId) {
       let searchInput = document.getElementById('search-' + tableId).value.toLowerCase();
       let matchSearch = row.innerText.toLowerCase().includes(searchInput);
-      if (tableId === 'fleetTable') return matchSearch;
-
+      
+      let plate = "";
       let matchPlate = true;
-      if (tableId === 'fuelLogTable') {
+      let matchType = true;
+
+      if (tableId === 'fleetTable') {
+          plate = row.cells[0].innerText.trim();
+          let typeFilter = document.getElementById('filter-type-summary').value;
+          if(typeFilter) {
+              let typeInRow = row.cells[1].innerText.trim();
+              matchType = (typeInRow === typeFilter);
+          }
+      } else if (tableId === 'fuelLogTable') {
+          plate = row.cells[1].innerText.trim();
           let p = document.getElementById('filter-plate-fuel').value;
-          if(p) matchPlate = (row.cells[1].innerText.trim() === p);
+          if(p) matchPlate = (plate === p);
+          
+          let typeFilter = document.getElementById('filter-type-fuel').value;
+          if(typeFilter) {
+              let vInfo = window.currentVehicleMap ? window.currentVehicleMap[plate] : null;
+              let vType = vInfo ? vInfo.type : "";
+              matchType = (vType === typeFilter);
+          }
       } else if (tableId === 'repairLogTable') {
+          plate = row.cells[1].innerText.trim();
           let p = document.getElementById('filter-plate-repair').value;
-          if(p) matchPlate = (row.cells[1].innerText.trim() === p);
+          if(p) matchPlate = (plate === p);
+          
+          let typeFilter = document.getElementById('filter-type-repair').value;
+          if(typeFilter) {
+              let vInfo = window.currentVehicleMap ? window.currentVehicleMap[plate] : null;
+              let vType = vInfo ? vInfo.type : "";
+              matchType = (vType === typeFilter);
+          }
       }
-      return matchSearch && matchPlate;
+      
+      return matchSearch && matchPlate && matchType;
   }
   
   function changePage(tableId, page) {
