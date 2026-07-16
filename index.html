@@ -22,12 +22,12 @@
     
     /* สไตล์ Navbar และ Dropdown Filter แบบใหม่ */
     .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.04); border-bottom: 1px solid #eaeaea; }
-    .filter-wrapper { background: #f0f2f5; border: 1px solid #e1e5eb; border-radius: 30px; padding: 4px 10px; display: flex; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+    .filter-wrapper { background: #f0f2f5; border: 1px solid #e1e5eb; border-radius: 30px; padding: 2px 10px; display: flex; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
     .filter-select { background-color: transparent; border: none; font-weight: 500; color: #495057; outline: none; cursor: pointer; padding: 4px 8px; }
     .filter-select:focus { box-shadow: none; color: #0d6efd; }
     
     /* สไตล์ปุ่มแบบ Modern (Gradient + Hover Lift) */
-    .btn-modern { border: none; border-radius: 50px; font-weight: 500; letter-spacing: 0.5px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 8px 18px; }
+    .btn-modern { border: none; border-radius: 50px; font-weight: 500; letter-spacing: 0.5px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 6px 16px; font-size: 0.9rem;}
     .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); filter: brightness(1.05); }
     .btn-modern:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     
@@ -36,38 +36,39 @@
     .btn-gradient-warning { background: linear-gradient(135deg, #ffc107, #f39c12); color: #212529; }
     
     /* Input Fields ในฟอร์มให้ดูโค้งมนนุ่มนวล */
-    .form-control, .form-select { border-radius: 12px; border: 1px solid #cfd4db; padding: 10px 15px; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-control, .form-select { border-radius: 10px; border: 1px solid #cfd4db; padding: 8px 12px; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
     .form-control:focus, .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     
     /* ปรับ Select2 ให้เข้ากับดีไซน์ใหม่ */
-    .select2-container--bootstrap-5 .select2-selection { border-radius: 12px !important; border: 1px solid #cfd4db; min-height: 42px; padding: 5px 10px; font-size: 14px; }
+    .select2-container--bootstrap-5 .select2-selection { border-radius: 10px !important; border: 1px solid #cfd4db; min-height: 38px; padding: 4px 8px; font-size: 14px; }
     .select2-container--bootstrap-5.select2-container--focus .select2-selection, .select2-container--bootstrap-5.select2-container--open .select2-selection { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     
-    /* สไตล์การ์ด */
-    .card-stat { background: white; border-radius: 16px; padding: 15px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; transition: transform 0.2s; }
-    .card-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
-    .card-stat h4 { font-size: 1.25rem; margin-top: 6px; letter-spacing: 0.5px; }
-    .card-stat small { font-size: 0.8rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* สไตล์การ์ด ปรับขนาดให้กระชับขึ้น */
+    .card-stat { background: white; border-radius: 12px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; transition: transform 0.2s; }
+    .card-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+    .card-stat h4 { font-size: 1.1rem; margin-top: 4px; letter-spacing: 0px; }
+    .card-stat small { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0px; }
     
-    .table-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; }
+    .table-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; }
     .table-responsive { max-height: 60vh; overflow-y: auto; }
-    .table-responsive thead th { position: sticky; top: 0; background-color: #f8fafd; z-index: 10; border-bottom: 2px solid #e9ecef; color: #495057; font-weight: 600; padding: 12px 15px; }
-    .table tbody td { padding: 10px 15px; vertical-align: middle; border-bottom: 1px solid #f4f4f4; }
+    .table-responsive thead th { position: sticky; top: 0; background-color: #f8fafd; z-index: 10; border-bottom: 2px solid #e9ecef; color: #495057; font-weight: 600; padding: 10px 15px; }
+    .table tbody td { padding: 8px 15px; vertical-align: middle; border-bottom: 1px solid #f4f4f4; }
     
     /* สีข้อความตัวเลข */
     .val-pos { color: #10b981; font-weight: 600; } 
     .val-neg { color: #ef4444; font-weight: 600; } 
     
     #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
-    .modal-content { border-radius: 20px; border: none; box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
-    .modal-header { border-radius: 20px 20px 0 0; }
-    .modal-stat-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; text-align: center; height: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .modal-content { border-radius: 16px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+    .modal-header { border-radius: 16px 16px 0 0; padding: 12px 20px; }
+    .modal-body { padding: 20px; }
+    .modal-stat-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; text-align: center; height: 100%; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
     .modal-stat-title { font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
-    .modal-stat-value { font-size: 1.15rem; font-weight: 600; color: #111827; margin-top: 4px; }
+    .modal-stat-value { font-size: 1.1rem; font-weight: 600; color: #111827; margin-top: 4px; }
     
     /* สไตล์ Tabs */
     .nav-tabs { border-bottom: 2px solid #e5e7eb; gap: 5px; }
-    .nav-tabs .nav-link { color: #6b7280; font-weight: 500; cursor: pointer; border: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 20px; background: transparent; transition: all 0.2s; }
+    .nav-tabs .nav-link { color: #6b7280; font-weight: 500; cursor: pointer; border: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 8px 16px; background: transparent; transition: all 0.2s; }
     .nav-tabs .nav-link:hover { color: #3b82f6; border-color: #d1d5db; }
     .nav-tabs .nav-link.active { color: #3b82f6; border-color: #3b82f6; background: transparent; font-weight: 600; }
     
@@ -93,16 +94,16 @@
 </div>
 
 <div id="appScreen" style="display: none;">
-  <nav class="navbar sticky-top mb-4 py-3">
+  <nav class="navbar sticky-top mb-3 py-2">
     <div class="container-custom d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div class="d-flex align-items-center gap-4 flex-wrap">
-         <span class="navbar-brand fw-bold m-0" style="color: #1e3a8a; font-size: 1.4rem;">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+         <span class="navbar-brand fw-bold m-0" style="color: #1e3a8a; font-size: 1.3rem;">
             <i class="fas fa-chart-line text-primary me-2"></i> VKT Analytics
          </span>
          
          <div class="filter-wrapper">
             <select id="filterYear" class="form-select-sm filter-select" onchange="checkFilterAndLoad()"></select>
-            <div style="width: 1px; height: 20px; background-color: #cbd5e1; margin: 0 5px;"></div>
+            <div style="width: 1px; height: 16px; background-color: #cbd5e1; margin: 0 5px;"></div>
             <select id="filterMonth" class="form-select-sm filter-select" onchange="checkFilterAndLoad()">
                <option value="all">ทุกเดือน</option>
                <option value="01">ม.ค.</option><option value="02">ก.พ.</option><option value="03">มี.ค.</option>
@@ -126,17 +127,17 @@
       </div>
       
       <div class="d-flex gap-2 align-items-center">
-         <button class="btn btn-light rounded-circle shadow-sm" style="width: 40px; height: 40px;" onclick="loadData()" title="รีเฟรชข้อมูล"><i class="fas fa-sync text-secondary"></i></button>
-         <button id="btnLoadArchive" class="btn btn-light rounded-pill shadow-sm text-secondary fw-medium px-3" onclick="toggleArchive()" title="เปิดเพื่อดึงประวัติในอดีตทั้งหมดมาแสดง (อาจใช้เวลาโหลดนานขึ้น)">
+         <button class="btn btn-sm btn-light rounded-circle shadow-sm" style="width: 36px; height: 36px;" onclick="loadData()" title="รีเฟรชข้อมูล"><i class="fas fa-sync text-secondary"></i></button>
+         <button id="btnLoadArchive" class="btn btn-sm btn-light rounded-pill shadow-sm text-secondary fw-medium px-3" onclick="toggleArchive()" title="เปิดเพื่อดึงประวัติในอดีตทั้งหมดมาแสดง (อาจใช้เวลาโหลดนานขึ้น)">
             <i class="fas fa-database me-1"></i> โหลดประวัติเก่า
          </button>
-         <button class="btn btn-danger rounded-circle shadow-sm ms-1" style="width: 40px; height: 40px; background: linear-gradient(135deg, #ef4444, #dc2626); border: none;" onclick="logout()" title="ออกจากระบบ"><i class="fas fa-power-off"></i></button>
+         <button class="btn btn-sm btn-danger rounded-circle shadow-sm ms-1" style="width: 36px; height: 36px; background: linear-gradient(135deg, #ef4444, #dc2626); border: none;" onclick="logout()" title="ออกจากระบบ"><i class="fas fa-power-off"></i></button>
       </div>
     </div>
   </nav>
 
   <div class="container-custom">
-    <div id="cards-fuel-summary" class="row g-3 mb-4">
+    <div id="cards-fuel-summary" class="row g-2 mb-3">
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-primary"><small class="text-muted">ระยะทางรวม</small><h4 class="fw-bold mb-0 text-primary" id="fleetDist">0</h4></div></div>
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-info"><small class="text-muted">จำนวนลิตรรวม</small><h4 class="fw-bold mb-0 text-info" id="fleetLiters">0</h4></div></div>
       <div class="col-6 col-lg"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">ค่าน้ำมันรวม (บาท)</small><h4 class="fw-bold mb-0 text-dark" id="fleetCost">0</h4></div></div>
@@ -144,7 +145,7 @@
       <div class="col-12 col-lg"><div class="card-stat border-start border-4 border-success"><small class="text-muted">ผลต่างเงิน (บาท)</small><h4 class="fw-bold mb-0" id="fleetDiffB">0</h4></div></div>
     </div>
 
-    <div id="cards-repair" class="row g-3 mb-4" style="display: none;">
+    <div id="cards-repair" class="row g-2 mb-3" style="display: none;">
       <div class="col-6"><div class="card-stat border-start border-4 border-danger"><small class="text-muted">ค่าซ่อมบำรุงรวม (บาท)</small><h4 class="fw-bold mb-0 text-danger" id="fleetRepairCost">0</h4></div></div>
       <div class="col-6"><div class="card-stat border-start border-4 border-warning"><small class="text-muted">รายการซ่อม (ครั้ง)</small><h4 class="fw-bold mb-0 text-dark" id="fleetRepairCount">0</h4></div></div>
     </div>
@@ -157,7 +158,7 @@
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="tab-summary">
-        <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1 flex-wrap gap-2">
           <h6 class="fw-bold m-0 text-secondary">สถานะปัจจุบัน</h6>
           <div class="d-flex gap-2 align-items-center flex-wrap">
             <select id="limit-fleetTable" class="form-select form-select-sm w-auto rounded-pill" onchange="changePage('fleetTable', 1)">
@@ -192,12 +193,12 @@
               <tbody id="tableBody"><tr class="no-data-row"><td colspan="12" class="text-center py-5">กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
-          <div id="pg-fleetTable" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+          <div id="pg-fleetTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
 
       <div class="tab-pane fade" id="tab-fuel-logs">
-        <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1 flex-wrap gap-2">
           <h6 class="fw-bold m-0 text-success">⛽ ประวัติเติมน้ำมัน และล้างรถ</h6>
           <div class="d-flex gap-2 align-items-center flex-wrap">
             <select id="limit-fuelLogTable" class="form-select form-select-sm w-auto rounded-pill" onchange="changePage('fuelLogTable', 1)">
@@ -237,12 +238,12 @@
               <tbody id="fuelLogTableBody"><tr class="no-data-row"><td colspan="13" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
-          <div id="pg-fuelLogTable" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+          <div id="pg-fuelLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
 
       <div class="tab-pane fade" id="tab-repair-logs">
-        <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1 flex-wrap gap-2">
           <h6 class="fw-bold m-0 text-warning text-dark">🔧 ประวัติซ่อมบำรุง</h6>
           <div class="d-flex gap-2 align-items-center flex-wrap">
             <select id="limit-repairLogTable" class="form-select form-select-sm w-auto rounded-pill" onchange="changePage('repairLogTable', 1)">
@@ -277,7 +278,7 @@
               <tbody id="repairLogTableBody"><tr class="no-data-row"><td colspan="8" class="text-center py-5">ไม่มีข้อมูล</td></tr></tbody>
             </table>
           </div>
-          <div id="pg-repairLogTable" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+          <div id="pg-repairLogTable" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
         </div>
       </div>
     </div>
@@ -341,13 +342,13 @@
         <h5 class="modal-title fw-bold"><i class="fas fa-truck-moving me-2"></i>จัดการทะเบียนรถ และคนขับ</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body bg-light p-4">
+      <div class="modal-body bg-light">
         <div id="vehicleListSection">
            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <input type="text" id="searchVehicleInput" class="form-control rounded-pill px-3" style="max-width: 300px;" placeholder="🔍 ค้นหาทะเบียนรถ หรือคนขับ..." onkeyup="renderVehicleList()">
               <button class="btn btn-primary fw-bold rounded-pill px-4" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; box-shadow: 0 4px 6px rgba(37,99,235,0.2);" onclick="openVehicleForm('add')"><i class="fas fa-plus"></i> เพิ่มรถใหม่</button>
            </div>
-           <div class="table-responsive bg-white rounded-4 shadow-sm border">
+           <div class="table-responsive bg-white rounded-3 shadow-sm border">
               <table class="table table-hover align-middle text-nowrap mb-0">
                  <thead class="table-light">
                     <tr>
@@ -365,32 +366,32 @@
         </div>
 
         <div id="vehicleFormSection" style="display: none;">
-           <div class="card shadow-sm border-0 rounded-4">
+           <div class="card shadow-sm border-0 rounded-3">
               <div class="card-body p-4">
                  <h5 class="fw-bold mb-4 text-primary border-bottom pb-3" id="vFormTitle">เพิ่มข้อมูลรถ</h5>
                  <input type="hidden" id="vFormAction">
                  <input type="hidden" id="vFormOldPlate">
                  
-                 <div class="row g-4 mb-4">
+                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                        <label class="form-label fw-bold text-muted small text-uppercase">ทะเบียนรถ</label>
-                       <input type="text" class="form-control form-control-lg" id="vFormPlate" placeholder="เช่น 70-8734">
+                       <input type="text" class="form-control" id="vFormPlate" placeholder="เช่น 70-8734">
                     </div>
                     <div class="col-md-6">
                        <label class="form-label fw-bold text-muted small text-uppercase">ประเภทรถ</label>
-                       <input type="text" class="form-control form-control-lg" id="vFormType" placeholder="เช่น รถกระบะ, รถบรรทุก">
+                       <input type="text" class="form-control" id="vFormType" placeholder="เช่น รถกระบะ, รถบรรทุก">
                     </div>
                     <div class="col-md-6">
                        <label class="form-label fw-bold text-muted small text-uppercase">คนขับหลัก</label>
-                       <input type="text" class="form-control form-control-lg" id="vFormDriver" placeholder="ชื่อ-สกุล คนขับหลัก">
+                       <input type="text" class="form-control" id="vFormDriver" placeholder="ชื่อ-สกุล คนขับหลัก">
                     </div>
                     <div class="col-md-3">
                        <label class="form-label fw-bold text-muted small text-uppercase">เรทมาตรฐาน (กม./ลิตร)</label>
-                       <input type="number" step="0.1" class="form-control form-control-lg" id="vFormRate" placeholder="เช่น 10.5">
+                       <input type="number" step="0.1" class="form-control" id="vFormRate" placeholder="เช่น 10.5">
                     </div>
                     <div class="col-md-3">
                        <label class="form-label fw-bold text-muted small text-uppercase">ระยะเช็คระยะ (กม.)</label>
-                       <input type="number" class="form-control form-control-lg" id="vFormInterval" placeholder="เช่น 10000">
+                       <input type="number" class="form-control" id="vFormInterval" placeholder="เช่น 10000">
                     </div>
                  </div>
                  <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
@@ -412,14 +413,14 @@
         <h5 class="modal-title fw-bold"><i class="fas fa-history me-2"></i>ประวัติ: <span id="detailPlate"></span></h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body bg-light p-4">
-        <ul class="nav nav-tabs mb-4" id="detailTab" role="tablist">
+      <div class="modal-body bg-light">
+        <ul class="nav nav-tabs mb-3" id="detailTab" role="tablist">
           <li class="nav-item"><button class="nav-link active rounded-pill px-4" data-bs-toggle="tab" data-bs-target="#detail-fuel">⛽ น้ำมัน & ล้างรถ</button></li>
           <li class="nav-item"><button class="nav-link rounded-pill px-4" data-bs-toggle="tab" data-bs-target="#detail-repair">🔧 ประวัติซ่อม</button></li>
         </ul>
         <div class="tab-content">
           <div class="tab-pane fade show active" id="detail-fuel">
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">จำนวนเติม</div><div class="modal-stat-value text-dark" id="popCount">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">ล้างรถ (ครั้ง)</div><div class="modal-stat-value text-info" id="popWashCount">0</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมลิตร</div><div class="modal-stat-value text-primary" id="popLiters">0</div></div></div>
@@ -427,34 +428,34 @@
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">เรทเฉลี่ย</div><div class="modal-stat-value text-info" id="popRate">0.00</div></div></div>
               <div class="col-6 col-md-2"><div class="modal-stat-box"><div class="modal-stat-title">รวมต่าง (บาท)</div><div class="modal-stat-value" id="popDiffB">0</div></div></div>
             </div>
-            <div class="bg-white rounded-4 shadow-sm border overflow-hidden">
+            <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-hover mb-0 text-nowrap align-middle">
                   <thead class="table-light"><tr><th style="position: sticky; top:0;">วันที่/เวลา</th><th style="position: sticky; top:0;">คนขับ</th><th style="position: sticky; top:0;">ชำระเงิน</th><th style="position: sticky; top:0;">สถานที่</th><th style="position: sticky; top:0;" class="text-end">Trip A</th><th style="position: sticky; top:0;" class="text-end">ลิตร</th><th style="position: sticky; top:0;" class="text-center">เรท</th><th style="position: sticky; top:0;" class="text-end">ต่าง(L)</th><th style="position: sticky; top:0;" class="text-end">ต่าง(฿)</th><th style="position: sticky; top:0;" class="text-end">รวมเงิน</th></tr></thead>
                   <tbody id="detailFuelBody"></tbody>
                 </table>
               </div>
-              <div id="modalFuelPagination" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+              <div id="modalFuelPagination" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
             </div>
           </div>
           <div class="tab-pane fade" id="detail-repair">
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
               <div class="col-6 col-md-3"><div class="modal-stat-box"><div class="modal-stat-title">ไมล์ล่าสุด</div><div class="modal-stat-value text-dark" id="popLastMile">0</div></div></div>
               <div class="col-6 col-md-3"><div class="modal-stat-box"><div class="modal-stat-title">ถ่าย นมค. ครั้งล่าสุด</div><div class="modal-stat-value text-primary" id="popLastOil">0</div></div></div>
               <div class="col-6 col-md-3"><div class="modal-stat-box"><div class="modal-stat-title">รอบถัดไป (ที่ระยะ)</div><div class="modal-stat-value text-dark" id="popNextService">0</div></div></div>
               <div class="col-6 col-md-3"><div class="modal-stat-box" id="boxRemainDist"><div class="modal-stat-title">เหลือวิ่งได้อีก (กม.)</div><div class="modal-stat-value" id="popRemainDist">0</div></div></div>
             </div>
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
               <div class="col-12"><div class="modal-stat-box bg-warning bg-opacity-10 border-warning border"><div class="modal-stat-title">ค่าซ่อมรวม</div><div class="modal-stat-value text-danger" id="popRepairCost">0</div></div></div>
             </div>
-            <div class="bg-white rounded-4 shadow-sm border overflow-hidden">
+            <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
               <div class="table-responsive">
                 <table class="table table-hover mb-0 text-nowrap align-middle">
                   <thead class="table-light"><tr><th style="position: sticky; top:0;">วันที่</th><th style="position: sticky; top:0;" class="text-end">เลขไมล์</th><th style="position: sticky; top:0;">รายการซ่อม</th><th style="position: sticky; top:0;">ช่าง/อู่</th><th style="position: sticky; top:0;" class="text-center">สถานะ</th><th style="position: sticky; top:0;" class="text-end">ค่าใช้จ่าย</th></tr></thead>
                   <tbody id="detailRepairBody"></tbody>
                 </table>
               </div>
-              <div id="modalRepairPagination" class="d-flex justify-content-between align-items-center p-3 bg-light border-top small"></div>
+              <div id="modalRepairPagination" class="d-flex justify-content-between align-items-center p-2 bg-light border-top small"></div>
             </div>
           </div>
         </div>
@@ -470,12 +471,12 @@
         <h5 class="modal-title fw-bold">⛽ บันทึกข้อมูล</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-4">
+      <div class="modal-body">
         <form id="fuelForm">
           <input type="hidden" id="fuelMode" value="fuel">
           <input type="hidden" id="fuelRow">
           <input type="hidden" id="fuelAction">
-          <div class="row g-3 mb-3">
+          <div class="row g-2 mb-2">
             <div class="col-6">
               <label class="form-label fw-bold text-muted small">วันที่</label>
               <input type="date" class="form-control" id="fuelDate" required>
@@ -485,25 +486,25 @@
               <input type="time" class="form-control" id="fuelTime" required>
             </div>
           </div>
-          <div class="mb-3">
+          <div class="mb-2">
             <label class="form-label fw-bold text-muted small">ทะเบียน</label>
             <select class="form-select" id="fuelPlate" required style="width: 100%;" onchange="onFuelPlateChange()">
               <option value="">กำลังโหลด...</option>
             </select>
           </div>
-          <div class="mb-3">
+          <div class="mb-2">
             <label class="form-label fw-bold text-muted small">คนขับรถ (เลือกหรือพิมพ์ชื่อใหม่)</label>
             <select class="form-select" id="fuelDriverSelect" style="width: 100%;">
               <option value="">ไม่มีคนขับ</option>
             </select>
           </div>
-          <ul class="nav nav-tabs mb-4 mt-4" style="border-bottom: 2px solid #e2e8f0;">
-            <li class="nav-item w-50 text-center"><a class="nav-link active fw-bold py-2" data-bs-toggle="tab" href="#tabFuel" onclick="setMode('fuel')" style="border-radius: 12px 12px 0 0;">เติมน้ำมัน</a></li>
-            <li class="nav-item w-50 text-center"><a class="nav-link fw-bold py-2" data-bs-toggle="tab" href="#tabWash" onclick="setMode('wash')" style="border-radius: 12px 12px 0 0;">ล้างรถ</a></li>
+          <ul class="nav nav-tabs mb-3 mt-3" style="border-bottom: 2px solid #e2e8f0;">
+            <li class="nav-item w-50 text-center"><a class="nav-link active fw-bold py-2" data-bs-toggle="tab" href="#tabFuel" onclick="setMode('fuel')" style="border-radius: 10px 10px 0 0;">เติมน้ำมัน</a></li>
+            <li class="nav-item w-50 text-center"><a class="nav-link fw-bold py-2" data-bs-toggle="tab" href="#tabWash" onclick="setMode('wash')" style="border-radius: 10px 10px 0 0;">ล้างรถ</a></li>
           </ul>
           <div class="tab-content bg-light p-3 rounded-3 border">
             <div class="tab-pane fade show active" id="tabFuel">
-              <div class="row g-3">
+              <div class="row g-2">
                 <div class="col-6">
                   <label class="form-label fw-bold text-muted small">เลขไมล์รวม (ปัจจุบัน)</label>
                   <input type="number" class="form-control border-primary bg-white" id="fuelMile" oninput="autoCalcTripA()">
@@ -522,7 +523,7 @@
                     <input type="number" step="0.01" class="form-control bg-white" id="fuelTotal" oninput="calculateRealtimePrice()">
                 </div>
               </div>
-              <div class="mt-3 text-end d-flex justify-content-end gap-2">
+              <div class="mt-2 text-end d-flex justify-content-end gap-2">
                 <span class="badge bg-white text-dark border py-2 px-3 fw-medium shadow-sm">
                   อัตราสิ้นเปลือง: <span id="lblCalcRate" class="text-primary fw-bold">0.00</span> กม./ลิตร
                 </span>
@@ -530,7 +531,7 @@
                   ราคา: <span id="lblCalcPrice" class="text-success fw-bold">0.00</span> บาท/ลิตร
                 </span>
               </div>
-              <div class="mt-3">
+              <div class="mt-2">
                 <label class="form-label fw-bold text-muted small">ชำระเงิน</label>
                 <select class="form-select bg-white" id="fuelPayment">
                   <option value="เงินสด/โอน">เงินสด/โอน</option>
@@ -556,11 +557,11 @@
               </div>
             </div>
           </div>
-          <div class="mt-4">
+          <div class="mt-3">
             <label class="form-label fw-bold text-muted small">สถานที่</label>
             <input type="text" class="form-control" id="fuelStation" placeholder="ระบุสถานที่/ปั๊ม">
           </div>
-          <button type="button" onclick="submitFuel()" class="btn btn-success w-100 mt-4 fw-bold py-3 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-size: 1rem;">บันทึก</button>
+          <button type="button" onclick="submitFuel()" class="btn btn-success w-100 mt-3 fw-bold py-2 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669); border: none;">บันทึก</button>
         </form>
       </div>
     </div>
@@ -574,17 +575,17 @@
         <h5 class="modal-title fw-bold">🔧 แจ้งซ่อมบำรุง</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-4">
+      <div class="modal-body">
         <form id="repairForm">
           <input type="hidden" id="repairRow">
           <input type="hidden" id="repairAction">
           
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
                 <label class="form-label fw-bold text-muted small">วันที่</label>
                 <input type="date" class="form-control" id="repairDate" required>
             </div>
-            <div class="col-md-6">
+            <div class="col-6">
               <label class="form-label fw-bold text-muted small">ทะเบียน</label>
               <select class="form-select" id="repairPlate" required style="width: 100%;">
                 <option value="">กำลังโหลด...</option>
@@ -592,25 +593,25 @@
             </div>
           </div>
           
-          <div class="row g-3 mb-4">
-            <div class="col-md-6">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
                 <label class="form-label fw-bold text-muted small">เลขไมล์</label>
                 <input type="number" class="form-control" id="repairMile">
             </div>
-            <div class="col-md-6">
+            <div class="col-6">
                 <label class="form-label fw-bold text-muted small">ช่าง / อู่</label>
                 <input type="text" class="form-control" id="repairMechanic">
             </div>
           </div>
 
-          <div class="mb-4 p-4 bg-light border rounded-4 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <div class="mb-3 p-3 bg-light border rounded-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
               <label class="fw-bold m-0 text-dark">รายการซ่อม (1 แถว ต่อ 1 รายการ)</label>
               <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-medium" id="btnAddRepairRow" onclick="addRepairItemRow()"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
             </div>
             
             <div id="repairItemsContainer">
-               <div class="input-group mb-3 repair-item-row shadow-sm rounded-3">
+               <div class="input-group mb-2 repair-item-row shadow-sm rounded-3">
                   <select class="form-select repair-select border-end-0" style="max-width: 40%;" onchange="toggleCustomInput(this)">
                      <option value="" disabled selected>เลือกรายการ...</option>
                      <option value="ถ่ายน้ำมันเครื่อง">ถ่ายน้ำมันเครื่อง</option>
@@ -626,12 +627,12 @@
                </div>
             </div>
             
-            <div class="text-end mt-3 bg-white p-3 rounded-3 border">
-               <strong class="text-muted">รวมสุทธิ: <span id="repairTotalCost" class="text-danger fs-5 ms-2">0</span> บาท</strong>
+            <div class="text-end mt-2 bg-white p-2 rounded-3 border">
+               <strong class="text-muted">รวมสุทธิ: <span id="repairTotalCost" class="text-danger fs-6 ms-1">0</span> บาท</strong>
             </div>
           </div>
 
-          <button type="button" onclick="submitRepair()" class="btn btn-warning w-100 mt-2 fw-bold py-3 rounded-pill shadow-sm text-dark" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); border: none; font-size: 1rem;">บันทึกแจ้งซ่อม</button>
+          <button type="button" onclick="submitRepair()" class="btn btn-warning w-100 mt-2 fw-bold py-2 rounded-pill shadow-sm text-dark" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); border: none;">บันทึกแจ้งซ่อม</button>
         </form>
       </div>
     </div>
